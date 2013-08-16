@@ -1,9 +1,6 @@
 ﻿# Overview
-
 A c# async client for Apache Zookeeper.
-
 # Example
-
 ```csharp
 var client = Sodao.Zookeeper.ZookClientPool.Get("zk1");
 
@@ -40,7 +37,6 @@ Console.ReadLine();
 sessionNode.Close();
 Console.WriteLine("session node closed");
 ```
-
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <configuration>
