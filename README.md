@@ -1,6 +1,6 @@
 ﻿# Overview
 
-A c# client for Apache Zookeeper.
+A c# async client for Apache Zookeeper.
 
 # Example
 
