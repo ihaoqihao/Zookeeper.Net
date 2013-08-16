@@ -31,37 +31,74 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+        <h1>
+<a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h1>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>A c# async client for Apache Zookeeper.</p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+<h1>
+<a name="requirements" class="anchor" href="#requirements"><span class="octicon octicon-link"></span></a>Requirements</h1>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>.Net 4.0+</p>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+<h1>
+<a name="example" class="anchor" href="#example"><span class="octicon octicon-link"></span></a>Example</h1>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<div class="highlight"><pre><span class="kt">var</span> <span class="n">client</span> <span class="p">=</span> <span class="n">Sodao</span><span class="p">.</span><span class="n">Zookeeper</span><span class="p">.</span><span class="n">ZookClientPool</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="s">"zk1"</span><span class="p">);</span>
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+<span class="c1">//create a node</span>
+<span class="n">client</span><span class="p">.</span><span class="n">Create</span><span class="p">(</span><span class="s">"/test1"</span><span class="p">,</span> <span class="k">null</span><span class="p">,</span> <span class="n">IDs</span><span class="p">.</span><span class="n">OPEN_ACL_UNSAFE</span><span class="p">,</span> <span class="n">CreateModes</span><span class="p">.</span><span class="n">Ephemeral</span><span class="p">).</span><span class="n">ContinueWith</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">IsFaulted</span><span class="p">)</span> <span class="n">Console</span><span class="p">.</span><span class="n">Write</span><span class="p">(</span><span class="kt">string</span><span class="p">.</span><span class="n">Concat</span><span class="p">(</span><span class="s">"error: "</span><span class="p">,</span> <span class="n">c</span><span class="p">.</span><span class="n">Exception</span><span class="p">.</span><span class="n">ToString</span><span class="p">()));</span>
+    <span class="k">else</span> <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">Result</span><span class="p">);</span>
+<span class="p">});</span>
+<span class="c1">//get child nodes</span>
+<span class="n">client</span><span class="p">.</span><span class="n">GetChildren</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="k">false</span><span class="p">).</span><span class="n">ContinueWith</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">IsFaulted</span><span class="p">)</span> <span class="n">Console</span><span class="p">.</span><span class="n">Write</span><span class="p">(</span><span class="kt">string</span><span class="p">.</span><span class="n">Concat</span><span class="p">(</span><span class="s">"error: "</span><span class="p">,</span> <span class="n">c</span><span class="p">.</span><span class="n">Exception</span><span class="p">.</span><span class="n">ToString</span><span class="p">()));</span>
+    <span class="k">else</span>
+    <span class="p">{</span>
+        <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">nodeName</span> <span class="k">in</span> <span class="n">c</span><span class="p">.</span><span class="n">Result</span><span class="p">)</span>
+            <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="n">nodeName</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">});</span>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<span class="c1">//remove /test1 node</span>
+<span class="n">Sodao</span><span class="p">.</span><span class="n">FastSocket</span><span class="p">.</span><span class="n">SocketBase</span><span class="p">.</span><span class="n">Utils</span><span class="p">.</span><span class="n">TaskEx</span><span class="p">.</span><span class="n">Delay</span><span class="p">(</span><span class="m">3000</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">client</span><span class="p">.</span><span class="n">Delete</span><span class="p">(</span><span class="s">"/test1"</span><span class="p">).</span><span class="n">ContinueWith</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">IsFaulted</span><span class="p">)</span> <span class="n">Console</span><span class="p">.</span><span class="n">Write</span><span class="p">(</span><span class="kt">string</span><span class="p">.</span><span class="n">Concat</span><span class="p">(</span><span class="s">"error: "</span><span class="p">,</span> <span class="n">c</span><span class="p">.</span><span class="n">Exception</span><span class="p">.</span><span class="n">ToString</span><span class="p">()));</span>
+        <span class="k">else</span> <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">"/test1 was deleted"</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">});</span>
 
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+<span class="c1">//session node</span>
+<span class="kt">var</span> <span class="n">sessionNode</span> <span class="p">=</span> <span class="k">new</span> <span class="n">SessionNode</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="s">"/sessionNode1"</span><span class="p">,</span> <span class="k">null</span><span class="p">,</span> <span class="n">IDs</span><span class="p">.</span><span class="n">OPEN_ACL_UNSAFE</span><span class="p">);</span>
+<span class="n">Console</span><span class="p">.</span><span class="n">ReadLine</span><span class="p">();</span>
+<span class="n">sessionNode</span><span class="p">.</span><span class="n">Close</span><span class="p">();</span>
+<span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">"session node closed"</span><span class="p">);</span>
+</pre></div>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<div class="highlight"><pre><span class="cp">&lt;?xml version="1.0" encoding="utf-8" ?&gt;</span>
+<span class="nt">&lt;configuration&gt;</span>
 
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
+  <span class="nt">&lt;configSections&gt;</span>
+    <span class="nt">&lt;section</span> <span class="na">name=</span><span class="s">"zookeeper"</span>
+             <span class="na">type=</span><span class="s">"Sodao.Zookeeper.Config.ZookeeperConfig, Zookeeper"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;/configSections&gt;</span>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+  <span class="nt">&lt;zookeeper&gt;</span>
+    <span class="nt">&lt;clients&gt;</span>
+      <span class="nt">&lt;client</span> <span class="na">name=</span><span class="s">"zk1"</span>
+              <span class="na">chroot=</span><span class="s">""</span>
+              <span class="na">sessionTimeout=</span><span class="s">"5000"</span>
+              <span class="na">connectionString=</span><span class="s">"127.0.0.1:2181"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/clients&gt;</span>
+  <span class="nt">&lt;/zookeeper&gt;</span>
+
+<span class="nt">&lt;/configuration&gt;</span>
+</pre></div>
       </section>
     </div>
 
