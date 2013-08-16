@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{517E7868-C7D0-4F50-BCE8-90D1D343EFAD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Sodao.Zookeeper</RootNamespace>
+    <AssemblyName>Zookeeper</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Zookeeper.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Zookeeper.XML</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="FastSocket.Client_1.0, Version=1.0.0.3, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\fastsocket_client.1.0.0.7\lib\net40\FastSocket.Client_1.0.dll</HintPath>
+    </Reference>
+    <Reference Include="FastSocket.SocketBase_1.0, Version=1.0.0.3, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\fastsocket_base.1.0.0.4\lib\net40\FastSocket.SocketBase_1.0.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Config\ZKClientCollection.cs" />
+    <Compile Include="Config\ZKClientConfig.cs" />
+    <Compile Include="Config\ZookeeperConfig.cs" />
+    <Compile Include="Data\ACL.cs" />
+    <Compile Include="Data\AuthRequest.cs" />
+    <Compile Include="Ex\ChildrenWatcher.cs" />
+    <Compile Include="Ex\NodeFactory.cs" />
+    <Compile Include="Ex\NodeInfo.cs" />
+    <Compile Include="Ex\SessionNode.cs" />
+    <Compile Include="KeeperStateChangedHandler.cs" />
+    <Compile Include="Utils\BinaryFormatter.cs" />
+    <Compile Include="Utils\BinaryReader.cs" />
+    <Compile Include="Utils\BinaryWriter.cs" />
+    <Compile Include="Data\ConnectRequest.cs" />
+    <Compile Include="Data\ConnectResponse.cs" />
+    <Compile Include="Data\CreateMode.cs" />
+    <Compile Include="Data\CreateRequest.cs" />
+    <Compile Include="Data\CreateResponse.cs" />
+    <Compile Include="Data\DeleteRequest.cs" />
+    <Compile Include="Data\EventType.cs" />
+    <Compile Include="Data\ExistsRequest.cs" />
+    <Compile Include="Data\GetACLRequest.cs" />
+    <Compile Include="Data\GetACLResponse.cs" />
+    <Compile Include="Data\GetChildren2Response.cs" />
+    <Compile Include="Data\GetChildrenRequest.cs" />
+    <Compile Include="Data\GetChildrenResponse.cs" />
+    <Compile Include="Data\GetDataRequest.cs" />
+    <Compile Include="Data\GetDataResponse.cs" />
+    <Compile Include="Data\IDs.cs" />
+    <Compile Include="Utils\IFormatter.cs" />
+    <Compile Include="Data\IRecord.cs" />
+    <Compile Include="Data\KeeperState.cs" />
+    <Compile Include="Data\OpCode.cs" />
+    <Compile Include="Data\Perms.cs" />
+    <Compile Include="Data\SetACLRequest.cs" />
+    <Compile Include="Data\SetDataRequest.cs" />
+    <Compile Include="Data\SetWatchesRequest.cs" />
+    <Compile Include="Data\Stat.cs" />
+    <Compile Include="Data\WatchedEvent.cs" />
+    <Compile Include="Data\WatcherEvent.cs" />
+    <Compile Include="Data\ZookError.cs" />
+    <Compile Include="Data\ZookID.cs" />
+    <Compile Include="IWatcher.cs" />
+    <Compile Include="IZookClient.cs" />
+    <Compile Include="KeeperException.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\Marshaller.cs" />
+    <Compile Include="Utils\PathUtils.cs" />
+    <Compile Include="WatcherWrapper.cs" />
+    <Compile Include="ZookClientFactory.cs" />
+    <Compile Include="ZookClient.cs" />
+    <Compile Include="ZookClientPool.cs" />
+    <Compile Include="ZookProtocol.cs" />
+    <Compile Include="ZookResponse.cs" />
+    <Compile Include="ZookWatcherManager.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
