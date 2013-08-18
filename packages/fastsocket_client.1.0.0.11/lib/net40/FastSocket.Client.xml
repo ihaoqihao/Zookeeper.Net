@@ -4,9 +4,264 @@
         <name>FastSocket.Client</name>
     </assembly>
     <members>
-        <member name="T:Sodao.FastSocket.Client.AsyncBinarySocketClient">
+        <member name="T:Sodao.FastSocket.Client.Protocol.BadProtocolException">
             <summary>
-            异步socket客户端
+            bad protocol exception
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.Protocol.BadProtocolException.#ctor">
+            <summary>
+            new
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.Protocol.BadProtocolException.#ctor(System.String)">
+            <summary>
+            new
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="T:Sodao.FastSocket.Client.RequestException">
+            <summary>
+            socket request exception
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.RequestException.Error">
+            <summary>
+            error
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.RequestException.CmdName">
+            <summary>
+            get cmdName
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.RequestException.#ctor(Sodao.FastSocket.Client.RequestException.Errors,System.String)">
+            <summary>
+            new
+            </summary>
+            <param name="error"></param>
+            <param name="cmdName"></param>
+        </member>
+        <member name="T:Sodao.FastSocket.Client.RequestException.Errors">
+            <summary>
+            error type enum
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.RequestException.Errors.Unknow">
+            <summary>
+            未知
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.RequestException.Errors.PendingSendTimeout">
+            <summary>
+            等待发送超时
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.RequestException.Errors.ReceiveTimeout">
+            <summary>
+            接收超时
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.RequestException.Errors.SendFailed">
+            <summary>
+            发送失败
+            </summary>
+        </member>
+        <member name="T:Sodao.FastSocket.Client.Request`1">
+            <summary>
+            request
+            </summary>
+            <typeparam name="TResponse"></typeparam>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.Request`1.ConsistentKey">
+            <summary>
+            一致性哈希标识code
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.Request`1.SeqID">
+            <summary>
+            seqID
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.Request`1.CmdName">
+            <summary>
+            get command name.
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.Request`1.ConnectionID">
+            <summary>
+            connectionID
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.Request`1.SentTime">
+            <summary>
+            sent time
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.Request`1._onException">
+            <summary>
+            异常回调
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.Request`1._onResult">
+            <summary>
+            结果回调
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.Request`1.#ctor(System.Int32,System.String,System.Byte[],System.Action{System.Exception},System.Action{`0})">
+            <summary>
+            new
+            </summary>
+            <param name="seqID">seqID</param>
+            <param name="cmdName">command name</param>
+            <param name="payload">发送内容</param>
+            <param name="onException">异常回调</param>
+            <param name="onResult">结果回调</param>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.Request`1.#ctor(System.Byte[],System.Int32,System.String,System.Byte[],System.Action{System.Exception},System.Action{`0})">
+            <summary>
+            new
+            </summary>
+            <param name="consistentKey">一致性哈希标识code, 可为null</param>
+            <param name="seqID">seqID</param>
+            <param name="cmdName">command name</param>
+            <param name="payload">发送内容</param>
+            <param name="onException">异常回调</param>
+            <param name="onResult">结果回调</param>
+            <exception cref="T:System.ArgumentNullException">onException is null</exception>
+            <exception cref="T:System.ArgumentNullException">onResult is null</exception>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.Request`1.SetException(System.Exception)">
+            <summary>
+            set Exception
+            </summary>
+            <param name="ex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.Request`1.SetResult(`0)">
+            <summary>
+            set Result
+            </summary>
+            <param name="response"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Sodao.FastSocket.Client.Response.AsyncBinaryResponse">
+            <summary>
+            async binary response
+            </summary>
+        </member>
+        <member name="T:Sodao.FastSocket.Client.Response.IResponse">
+            <summary>
+            response interface.
+            </summary>
+        </member>
+        <member name="P:Sodao.FastSocket.Client.Response.IResponse.SeqID">
+            <summary>
+            seqID
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.Response.AsyncBinaryResponse.Flag">
+            <summary>
+            flag
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.Client.Response.AsyncBinaryResponse.Buffer">
+            <summary>
+            buffer
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.Response.AsyncBinaryResponse.#ctor(System.String,System.Int32,System.Byte[])">
+            <summary>
+            new
+            </summary>
+            <param name="flag"></param>
+            <param name="seqID"></param>
+            <param name="buffer"></param>
+        </member>
+        <member name="P:Sodao.FastSocket.Client.Response.AsyncBinaryResponse.SeqID">
+            <summary>
+            seqID
+            </summary>
+        </member>
+        <member name="T:Sodao.FastSocket.Client.Protocol.AsyncBinaryProtocol">
+            <summary>
+            异步二进制协议
+            协议格式
+            [Message Length(int32)][SeqID(int32)][Request|Response Flag Length(int16)][Request|Response Flag + Body Buffer]
+            </summary>
+        </member>
+        <member name="T:Sodao.FastSocket.Client.Protocol.IProtocol`1">
+            <summary>
+            协议接口
+            </summary>
+            <typeparam name="TResponse"></typeparam>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.Protocol.IProtocol`1.FindResponse(Sodao.FastSocket.SocketBase.IConnection,System.ArraySegment{System.Byte},System.Int32@)">
+            <summary>
+            Find Response
+            </summary>
+            <param name="connection"></param>
+            <param name="buffer"></param>
+            <param name="readlength"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.Protocol.AsyncBinaryProtocol.FindResponse(Sodao.FastSocket.SocketBase.IConnection,System.ArraySegment{System.Byte},System.Int32@)">
+            <summary>
+            find response
+            </summary>
+            <param name="connection"></param>
+            <param name="buffer"></param>
+            <param name="readlength"></param>
+            <returns></returns>
+            <exception cref="T:Sodao.FastSocket.Client.Protocol.BadProtocolException">bad async binary protocl</exception>
+        </member>
+        <member name="T:Sodao.FastSocket.Client.IServerPool">
+            <summary>
+            server pool interface.
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.IServerPool.TryRegisterNode(System.String,System.Net.EndPoint)">
+            <summary>
+            try register server node.
+            </summary>
+            <param name="name"></param>
+            <param name="endPoint"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.IServerPool.UnRegisterNode(System.String)">
+            <summary>
+            remove server node
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.IServerPool.Acquire">
+            <summary>
+            acquire a connection
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.IServerPool.Acquire(System.Byte[])">
+            <summary>
+            acquire a connection
+            </summary>
+            <param name="hash">一致性哈希值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.IServerPool.GetAllNodeNames">
+            <summary>
+            get all node names
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="E:Sodao.FastSocket.Client.IServerPool.Connected">
+            <summary>
+            socket connected event
+            </summary>
+        </member>
+        <member name="T:Sodao.FastSocket.Client.ThriftClient">
+            <summary>
+            thrift client
             </summary>
         </member>
         <member name="T:Sodao.FastSocket.Client.PooledSocketClient`1">
@@ -81,11 +336,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Sodao.FastSocket.Client.BaseSocketClient`1.TrySendAllPendingRequest">
-            <summary>
-            try send all pending request
-            </summary>
-        </member>
         <member name="M:Sodao.FastSocket.Client.BaseSocketClient`1.NextRequestSeqID">
             <summary>
             产生不重复的seqID
@@ -146,10 +396,11 @@
             new
             </summary>
         </member>
-        <member name="M:Sodao.FastSocket.Client.BaseSocketClient`1.PendingSendQueue.#ctor(System.Int32)">
+        <member name="M:Sodao.FastSocket.Client.BaseSocketClient`1.PendingSendQueue.#ctor(Sodao.FastSocket.Client.BaseSocketClient{`0},System.Int32)">
             <summary>
             new
             </summary>
+            <param name="client"></param>
             <param name="millisecondsSendTimeout"></param>
         </member>
         <member name="M:Sodao.FastSocket.Client.BaseSocketClient`1.PendingSendQueue.Enqueue(Sodao.FastSocket.Client.Request{`0})">
@@ -234,18 +485,18 @@
             <param name="millisecondsReceiveTimeout"></param>
             <exception cref="T:System.ArgumentNullException">protocol is null</exception>
         </member>
+        <member name="M:Sodao.FastSocket.Client.PooledSocketClient`1.InitServerPool">
+            <summary>
+            create <see cref="T:Sodao.FastSocket.Client.IServerPool"/> instance.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Sodao.FastSocket.Client.PooledSocketClient`1.OnServerPoolConnected(System.String,Sodao.FastSocket.SocketBase.IConnection)">
             <summary>
             on server pool connected
             </summary>
             <param name="name"></param>
             <param name="connection"></param>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.PooledSocketClient`1.InitServerPool">
-            <summary>
-            create <see cref="T:Sodao.FastSocket.Client.IServerPool"/> instance.
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Sodao.FastSocket.Client.PooledSocketClient`1.Send(Sodao.FastSocket.Client.Request{`0})">
             <summary>
@@ -274,19 +525,19 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Sodao.FastSocket.Client.AsyncBinarySocketClient.#ctor">
+        <member name="M:Sodao.FastSocket.Client.ThriftClient.#ctor">
             <summary>
             new
             </summary>
         </member>
-        <member name="M:Sodao.FastSocket.Client.AsyncBinarySocketClient.#ctor(System.Int32,System.Int32)">
+        <member name="M:Sodao.FastSocket.Client.ThriftClient.#ctor(System.Int32,System.Int32)">
             <summary>
             new
             </summary>
             <param name="socketBufferSize"></param>
             <param name="messageBufferSize"></param>
         </member>
-        <member name="M:Sodao.FastSocket.Client.AsyncBinarySocketClient.#ctor(System.Int32,System.Int32,System.Int32,System.Int32)">
+        <member name="M:Sodao.FastSocket.Client.ThriftClient.#ctor(System.Int32,System.Int32,System.Int32,System.Int32)">
             <summary>
             new
             </summary>
@@ -295,172 +546,31 @@
             <param name="millisecondsSendTimeout"></param>
             <param name="millisecondsReceiveTimeout"></param>
         </member>
-        <member name="M:Sodao.FastSocket.Client.AsyncBinarySocketClient.Send``1(System.String,System.Byte[],System.Func{Sodao.FastSocket.Client.Response.AsyncBinaryResponse,``0},System.Object)">
+        <member name="M:Sodao.FastSocket.Client.ThriftClient.Send(System.String,System.String,System.Int32,System.Byte[],System.Action{System.Exception},System.Action{System.Byte[]})">
             <summary>
             send
             </summary>
-            <typeparam name="TResult"></typeparam>
+            <param name="service"></param>
             <param name="cmdName"></param>
+            <param name="seqID"></param>
             <param name="payload"></param>
-            <param name="funcResultFactory"></param>
-            <param name="asyncState"></param>
-            <returns></returns>
+            <param name="onException"></param>
+            <param name="onResult"></param>
         </member>
-        <member name="M:Sodao.FastSocket.Client.AsyncBinarySocketClient.Send``1(System.Byte[],System.String,System.Byte[],System.Func{Sodao.FastSocket.Client.Response.AsyncBinaryResponse,``0},System.Object)">
+        <member name="M:Sodao.FastSocket.Client.ThriftClient.Send(System.Byte[],System.String,System.String,System.Int32,System.Byte[],System.Action{System.Exception},System.Action{System.Byte[]})">
             <summary>
-            new
+            sned
             </summary>
-            <typeparam name="TResult"></typeparam>
             <param name="consistentKey"></param>
+            <param name="service"></param>
             <param name="cmdName"></param>
+            <param name="seqID"></param>
             <param name="payload"></param>
-            <param name="funcResultFactory"></param>
-            <param name="asyncState"></param>
-            <returns></returns>
-            <exception cref="T:System.ArgumentNullException">cmdName is null or empty.</exception>
-            <exception cref="T:System.ArgumentNullException">funcResultFactory is null.</exception>
-        </member>
-        <member name="T:Sodao.FastSocket.Client.Protocol.AsyncBinaryProtocol">
-            <summary>
-            异步二进制协议
-            协议格式
-            [Message Length(int32)][SeqID(int32)][Request|Response Flag Length(int16)][Request|Response Flag + Body Buffer]
-            </summary>
-        </member>
-        <member name="T:Sodao.FastSocket.Client.Protocol.IProtocol`1">
-            <summary>
-            协议接口
-            </summary>
-            <typeparam name="TResponse"></typeparam>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.Protocol.IProtocol`1.FindResponse(Sodao.FastSocket.SocketBase.IConnection,System.ArraySegment{System.Byte},System.Int32@)">
-            <summary>
-            Find Response
-            </summary>
-            <param name="connection"></param>
-            <param name="buffer"></param>
-            <param name="readlength"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.Protocol.AsyncBinaryProtocol.FindResponse(Sodao.FastSocket.SocketBase.IConnection,System.ArraySegment{System.Byte},System.Int32@)">
-            <summary>
-            find response
-            </summary>
-            <param name="connection"></param>
-            <param name="buffer"></param>
-            <param name="readlength"></param>
-            <returns></returns>
-            <exception cref="T:Sodao.FastSocket.Client.Protocol.BadProtocolException">bad async binary protocl</exception>
-        </member>
-        <member name="T:Sodao.FastSocket.Client.Protocol.BadProtocolException">
-            <summary>
-            bad protocol exception
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.Protocol.BadProtocolException.#ctor">
-            <summary>
-            new
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.Protocol.BadProtocolException.#ctor(System.String)">
-            <summary>
-            new
-            </summary>
-            <param name="message"></param>
-        </member>
-        <member name="T:Sodao.FastSocket.Client.Protocol.ThriftProtocol">
-            <summary>
-            thrift protocol
-            [message len,4][version,4][cmd len,4][cmd][seqID,4][data...,N]
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.Protocol.ThriftProtocol.FindResponse(Sodao.FastSocket.SocketBase.IConnection,System.ArraySegment{System.Byte},System.Int32@)">
-            <summary>
-            find response
-            </summary>
-            <param name="connection"></param>
-            <param name="buffer"></param>
-            <param name="readlength"></param>
-            <returns></returns>
-            <exception cref="T:Sodao.FastSocket.Client.Protocol.BadProtocolException">bad thrift protocol</exception>
-        </member>
-        <member name="T:Sodao.FastSocket.Client.Request`1">
-            <summary>
-            request
-            </summary>
-            <typeparam name="TResponse"></typeparam>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.Request`1.ConsistentKey">
-            <summary>
-            一致性哈希标识code
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.Request`1.SeqID">
-            <summary>
-            seqID
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.Request`1.CmdName">
-            <summary>
-            get command name.
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.Request`1.ConnectionID">
-            <summary>
-            connectionID
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.Request`1.SentTime">
-            <summary>
-            sent time
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.Request`1._onException">
-            <summary>
-            异常回调
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.Request`1._onResult">
-            <summary>
-            结果回调
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.Request`1.#ctor(System.Int32,System.String,System.Byte[],System.Action{System.Exception},System.Action{`0})">
-            <summary>
-            new
-            </summary>
-            <param name="seqID">seqID</param>
-            <param name="cmdName">command name</param>
-            <param name="payload">发送内容</param>
-            <param name="onException">异常回调</param>
-            <param name="onResult">结果回调</param>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.Request`1.#ctor(System.Byte[],System.Int32,System.String,System.Byte[],System.Action{System.Exception},System.Action{`0})">
-            <summary>
-            new
-            </summary>
-            <param name="consistentKey">一致性哈希标识code, 可为null</param>
-            <param name="seqID">seqID</param>
-            <param name="cmdName">command name</param>
-            <param name="payload">发送内容</param>
-            <param name="onException">异常回调</param>
-            <param name="onResult">结果回调</param>
+            <param name="onException"></param>
+            <param name="onResult"></param>
+            <exception cref="T:System.ArgumentNullException">payload is null or empty</exception>
             <exception cref="T:System.ArgumentNullException">onException is null</exception>
             <exception cref="T:System.ArgumentNullException">onResult is null</exception>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.Request`1.SetException(System.Exception)">
-            <summary>
-            set Exception
-            </summary>
-            <param name="ex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.Request`1.SetResult(`0)">
-            <summary>
-            set Result
-            </summary>
-            <param name="response"></param>
-            <returns></returns>
         </member>
         <member name="T:Sodao.FastSocket.Client.SocketConnector">
             <summary>
@@ -520,90 +630,72 @@
             <exception cref="T:System.ArgumentNullException">host is null</exception>
             <exception cref="T:System.ArgumentNullException">callback is null</exception>
         </member>
-        <member name="T:Sodao.FastSocket.Client.RequestException">
+        <member name="T:Sodao.FastSocket.Client.Protocol.ThriftProtocol">
             <summary>
-            socket request exception
+            thrift protocol
+            [message len,4][version,4][cmd len,4][cmd][seqID,4][data...,N]
             </summary>
         </member>
-        <member name="F:Sodao.FastSocket.Client.RequestException.Error">
+        <member name="M:Sodao.FastSocket.Client.Protocol.ThriftProtocol.FindResponse(Sodao.FastSocket.SocketBase.IConnection,System.ArraySegment{System.Byte},System.Int32@)">
             <summary>
-            error
+            find response
             </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.RequestException.CmdName">
-            <summary>
-            get cmdName
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.RequestException.#ctor(Sodao.FastSocket.Client.RequestException.Errors,System.String)">
-            <summary>
-            new
-            </summary>
-            <param name="error"></param>
-            <param name="cmdName"></param>
-        </member>
-        <member name="T:Sodao.FastSocket.Client.RequestException.Errors">
-            <summary>
-            error type enum
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.RequestException.Errors.Unknow">
-            <summary>
-            未知
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.RequestException.Errors.PendingSendTimeout">
-            <summary>
-            等待发送超时
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.RequestException.Errors.ReceiveTimeout">
-            <summary>
-            接收超时
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.RequestException.Errors.SendFailed">
-            <summary>
-            发送失败
-            </summary>
-        </member>
-        <member name="T:Sodao.FastSocket.Client.Response.AsyncBinaryResponse">
-            <summary>
-            async binary response
-            </summary>
-        </member>
-        <member name="T:Sodao.FastSocket.Client.Response.IResponse">
-            <summary>
-            response interface.
-            </summary>
-        </member>
-        <member name="P:Sodao.FastSocket.Client.Response.IResponse.SeqID">
-            <summary>
-            seqID
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.Response.AsyncBinaryResponse.Flag">
-            <summary>
-            flag
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.Client.Response.AsyncBinaryResponse.Buffer">
-            <summary>
-            buffer
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.Response.AsyncBinaryResponse.#ctor(System.String,System.Int32,System.Byte[])">
-            <summary>
-            new
-            </summary>
-            <param name="flag"></param>
-            <param name="seqID"></param>
+            <param name="connection"></param>
             <param name="buffer"></param>
+            <param name="readlength"></param>
+            <returns></returns>
+            <exception cref="T:Sodao.FastSocket.Client.Protocol.BadProtocolException">bad thrift protocol</exception>
         </member>
-        <member name="P:Sodao.FastSocket.Client.Response.AsyncBinaryResponse.SeqID">
+        <member name="T:Sodao.FastSocket.Client.AsyncBinarySocketClient">
             <summary>
-            seqID
+            异步socket客户端
             </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.AsyncBinarySocketClient.#ctor">
+            <summary>
+            new
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.AsyncBinarySocketClient.#ctor(System.Int32,System.Int32)">
+            <summary>
+            new
+            </summary>
+            <param name="socketBufferSize"></param>
+            <param name="messageBufferSize"></param>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.AsyncBinarySocketClient.#ctor(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            new
+            </summary>
+            <param name="socketBufferSize"></param>
+            <param name="messageBufferSize"></param>
+            <param name="millisecondsSendTimeout"></param>
+            <param name="millisecondsReceiveTimeout"></param>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.AsyncBinarySocketClient.Send``1(System.String,System.Byte[],System.Func{Sodao.FastSocket.Client.Response.AsyncBinaryResponse,``0},System.Object)">
+            <summary>
+            send
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <param name="cmdName"></param>
+            <param name="payload"></param>
+            <param name="funcResultFactory"></param>
+            <param name="asyncState"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Sodao.FastSocket.Client.AsyncBinarySocketClient.Send``1(System.Byte[],System.String,System.Byte[],System.Func{Sodao.FastSocket.Client.Response.AsyncBinaryResponse,``0},System.Object)">
+            <summary>
+            new
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <param name="consistentKey"></param>
+            <param name="cmdName"></param>
+            <param name="payload"></param>
+            <param name="funcResultFactory"></param>
+            <param name="asyncState"></param>
+            <returns></returns>
+            <exception cref="T:System.ArgumentNullException">cmdName is null or empty.</exception>
+            <exception cref="T:System.ArgumentNullException">funcResultFactory is null.</exception>
         </member>
         <member name="T:Sodao.FastSocket.Client.Response.ThriftResponse">
             <summary>
@@ -630,50 +722,6 @@
         <member name="T:Sodao.FastSocket.Client.DefaultServerPool">
             <summary>
             default server pool
-            </summary>
-        </member>
-        <member name="T:Sodao.FastSocket.Client.IServerPool">
-            <summary>
-            server pool interface.
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.IServerPool.TryRegisterNode(System.String,System.Net.EndPoint)">
-            <summary>
-            try register server node.
-            </summary>
-            <param name="name"></param>
-            <param name="endPoint"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.IServerPool.UnRegisterNode(System.String)">
-            <summary>
-            remove server node
-            </summary>
-            <param name="name"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.IServerPool.Acquire">
-            <summary>
-            acquire a connection
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.IServerPool.Acquire(System.Byte[])">
-            <summary>
-            acquire a connection
-            </summary>
-            <param name="hash">一致性哈希值</param>
-            <returns></returns>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.IServerPool.GetAllNodeNames">
-            <summary>
-            get all node names
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="E:Sodao.FastSocket.Client.IServerPool.Connected">
-            <summary>
-            socket connected event
             </summary>
         </member>
         <member name="F:Sodao.FastSocket.Client.DefaultServerPool._dicNodes">
@@ -757,58 +805,6 @@
             <summary>
             socket connected event
             </summary>
-        </member>
-        <member name="T:Sodao.FastSocket.Client.ThriftClient">
-            <summary>
-            thrift client
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.ThriftClient.#ctor">
-            <summary>
-            new
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.ThriftClient.#ctor(System.Int32,System.Int32)">
-            <summary>
-            new
-            </summary>
-            <param name="socketBufferSize"></param>
-            <param name="messageBufferSize"></param>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.ThriftClient.#ctor(System.Int32,System.Int32,System.Int32,System.Int32)">
-            <summary>
-            new
-            </summary>
-            <param name="socketBufferSize"></param>
-            <param name="messageBufferSize"></param>
-            <param name="millisecondsSendTimeout"></param>
-            <param name="millisecondsReceiveTimeout"></param>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.ThriftClient.Send(System.String,System.String,System.Int32,System.Byte[],System.Action{System.Exception},System.Action{System.Byte[]})">
-            <summary>
-            send
-            </summary>
-            <param name="service"></param>
-            <param name="cmdName"></param>
-            <param name="seqID"></param>
-            <param name="payload"></param>
-            <param name="onException"></param>
-            <param name="onResult"></param>
-        </member>
-        <member name="M:Sodao.FastSocket.Client.ThriftClient.Send(System.Byte[],System.String,System.String,System.Int32,System.Byte[],System.Action{System.Exception},System.Action{System.Byte[]})">
-            <summary>
-            sned
-            </summary>
-            <param name="consistentKey"></param>
-            <param name="service"></param>
-            <param name="cmdName"></param>
-            <param name="seqID"></param>
-            <param name="payload"></param>
-            <param name="onException"></param>
-            <param name="onResult"></param>
-            <exception cref="T:System.ArgumentNullException">payload is null or empty</exception>
-            <exception cref="T:System.ArgumentNullException">onException is null</exception>
-            <exception cref="T:System.ArgumentNullException">onResult is null</exception>
         </member>
     </members>
 </doc>

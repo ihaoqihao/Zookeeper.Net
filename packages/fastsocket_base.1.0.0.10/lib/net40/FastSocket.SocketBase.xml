@@ -4,6 +4,80 @@
         <name>FastSocket.SocketBase</name>
     </assembly>
     <members>
+        <member name="T:Sodao.FastSocket.SocketBase.Utils.TaskEx">
+            <summary>
+            task ex
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.TaskEx.Delay(System.Int32,System.Action)">
+            <summary>
+            延迟执行某个动作
+            </summary>
+            <param name="dueTime"></param>
+            <param name="callback"></param>
+            <exception cref="T:System.ArgumentOutOfRangeException">dueTime</exception>
+            <exception cref="T:System.ArgumentNullException">callback is null</exception>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1">
+            <summary>
+            non-locking stack.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.#ctor">
+            <summary>
+            new
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.Push(`0)">
+            <summary>
+            push
+            </summary>
+            <param name="item"></param>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.TryPop(`0@)">
+            <summary>
+            try pop
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.Count">
+            <summary>
+            get count
+            </summary>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.Node">
+            <summary>
+            node
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.Node.Value">
+            <summary>
+            value
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.Node.Next">
+            <summary>
+            next
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.Node.#ctor(`0)">
+            <summary>
+            new
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.BaseHost">
+            <summary>
+            base host
+            </summary>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.IHost">
+            <summary>
+            socket connection host interface
+            </summary>
+        </member>
         <member name="T:Sodao.FastSocket.SocketBase.ISAEAPool">
             <summary>
             socketAsyncEventArgs pool interface
@@ -20,6 +94,184 @@
             release
             </summary>
             <param name="e"></param>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.IHost.NextConnectionID">
+            <summary>
+            生成下一个连接ID
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.IHost.GetConnectionByID(System.Int64)">
+            <summary>
+            get <see cref="T:Sodao.FastSocket.SocketBase.IConnection"/> by connectionID
+            </summary>
+            <param name="connectionID"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.IHost.Start">
+            <summary>
+            启动
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.IHost.Stop">
+            <summary>
+            停止
+            </summary>
+        </member>
+        <member name="P:Sodao.FastSocket.SocketBase.IHost.SocketBufferSize">
+            <summary>
+            get socket buffer size
+            </summary>
+        </member>
+        <member name="P:Sodao.FastSocket.SocketBase.IHost.MessageBufferSize">
+            <summary>
+            get message buffer size
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.SocketBase.BaseHost._listConnections">
+            <summary>
+            connection collection
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.#ctor(System.Int32,System.Int32)">
+            <summary>
+            new
+            </summary>
+            <param name="socketBufferSize"></param>
+            <param name="messageBufferSize"></param>
+            <exception cref="T:System.ArgumentOutOfRangeException">socketBufferSize</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">messageBufferSize</exception>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.NextConnectionID">
+            <summary>
+            生成下一个连接ID
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.GetConnectionByID(System.Int64)">
+            <summary>
+            get <see cref="T:Sodao.FastSocket.SocketBase.IConnection"/> by connectionID
+            </summary>
+            <param name="connectionID"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.Start">
+            <summary>
+            启动
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.Stop">
+            <summary>
+            停止
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.RegisterConnection(Sodao.FastSocket.SocketBase.IConnection)">
+            <summary>
+            register connection
+            </summary>
+            <param name="connection"></param>
+            <exception cref="T:System.ArgumentNullException">connection is null</exception>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.OnConnected(Sodao.FastSocket.SocketBase.IConnection)">
+            <summary>
+            OnConnected
+            </summary>
+            <param name="connection"></param>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.OnStartSending(Sodao.FastSocket.SocketBase.IConnection,Sodao.FastSocket.SocketBase.Packet)">
+            <summary>
+            OnStartSending
+            </summary>
+            <param name="connection"></param>
+            <param name="packet"></param>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.OnSendCallback(Sodao.FastSocket.SocketBase.IConnection,Sodao.FastSocket.SocketBase.SendCallbackEventArgs)">
+            <summary>
+            OnSendCallback
+            </summary>
+            <param name="connection"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.OnMessageReceived(Sodao.FastSocket.SocketBase.IConnection,Sodao.FastSocket.SocketBase.MessageReceivedEventArgs)">
+            <summary>
+            OnMessageReceived
+            </summary>
+            <param name="connection"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.OnDisconnected(Sodao.FastSocket.SocketBase.IConnection,System.Exception)">
+            <summary>
+            OnDisconnected
+            </summary>
+            <param name="connection"></param>
+            <param name="ex"></param>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.OnError(Sodao.FastSocket.SocketBase.IConnection,System.Exception)">
+            <summary>
+            OnError
+            </summary>
+            <param name="connection"></param>
+            <param name="ex"></param>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.GetSocketAsyncEventArgs">
+            <summary>
+            get
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.ReleaseSocketAsyncEventArgs(System.Net.Sockets.SocketAsyncEventArgs)">
+            <summary>
+            release
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="P:Sodao.FastSocket.SocketBase.BaseHost.SocketBufferSize">
+            <summary>
+            get socket buffer size
+            </summary>
+        </member>
+        <member name="P:Sodao.FastSocket.SocketBase.BaseHost.MessageBufferSize">
+            <summary>
+            get message buffer size
+            </summary>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.Packet">
+            <summary>
+            packet
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.SocketBase.Packet.SentSize">
+            <summary>
+            get or set sent size.
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.SocketBase.Packet.BeginTime">
+            <summary>
+            get begin time
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.SocketBase.Packet.Payload">
+            <summary>
+            get payload
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Packet.#ctor(System.Byte[])">
+            <summary>
+            new
+            </summary>
+            <param name="payload"></param>
+            <exception cref="T:System.ArgumentNullException">payload is null.</exception>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Packet.IsSent">
+            <summary>
+            获取一个值，该值指示当前packet是否已发送完毕.
+            </summary>
+            <returns>true表示已发送完毕</returns>
+        </member>
+        <member name="P:Sodao.FastSocket.SocketBase.Packet.Tag">
+            <summary>
+            get or set tag object
+            </summary>
         </member>
         <member name="T:Sodao.FastSocket.SocketBase.ConnectionCollection">
             <summary>
@@ -69,6 +321,86 @@
             <summary>
             断开所有连接
             </summary>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.ErrorHandler">
+            <summary>
+            error delegate
+            </summary>
+            <param name="connection"></param>
+            <param name="ex"></param>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.Utils.Date">
+            <summary>
+            关于时间的一些操作
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.SocketBase.Utils.Date.unixEpoch">
+            <summary>
+            unix下的纪元时间
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.SocketBase.Utils.Date.dateTimeMaxValueMillisecondsSinceEpoch">
+            <summary>
+            the max milliseconds since epoch.
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.ToUniversalTime(System.DateTime)">
+            <summary>
+            Converts a DateTime to UTC (with special handling for MinValue and MaxValue).
+            </summary>
+            <param name="dateTime">A DateTime.</param>
+            <returns>The DateTime in UTC.</returns>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.ToMillisecondsSinceEpoch(System.DateTime)">
+            <summary>
+            Converts a DateTime to number of milliseconds since Unix epoch.
+            </summary>
+            <param name="dateTime">A DateTime.</param>
+            <returns>Number of seconds since Unix epoch.</returns>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.ToSecondsSinceEpoch(System.DateTime)">
+            <summary>
+            Converts a DateTime to number of seconds since Unix epoch.
+            </summary>
+            <param name="dateTime">A DateTime.</param>
+            <returns>Number of seconds since Unix epoch.</returns>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.ToDateTimeFromMillisecondsSinceEpoch(System.Int64)">
+            <summary>
+            Converts from number of milliseconds since Unix epoch to DateTime.
+            </summary>
+            <param name="millisecondsSinceEpoch">The number of milliseconds since Unix epoch.</param>
+            <returns>A DateTime.</returns>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.ToDateTimeFromSecondsSinceEpoch(System.Int64)">
+            <summary>
+            Converts from number of seconds since Unix epoch to DateTime.
+            </summary>
+            <param name="secondsSinceEpoch">The number of seconds since Unix epoch.</param>
+            <returns>A DateTime.</returns>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.ToLocalTime(System.DateTime,System.DateTimeKind)">
+            <summary>
+            Converts a DateTime to local time (with special handling for MinValue and MaxValue).
+            </summary>
+            <param name="dateTime">A DateTime.</param>
+            <param name="kind">A DateTimeKind.</param>
+            <returns>The DateTime in local time.</returns>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.SpecifyKind(System.DateTime,System.DateTimeKind)">
+            <summary>
+            SpecifyKind
+            </summary>
+            <param name="dt"></param>
+            <param name="kind"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.StartSendingHandler">
+            <summary>
+            begin send handler
+            </summary>
+            <param name="connection"></param>
+            <param name="packet"></param>
         </member>
         <member name="T:Sodao.FastSocket.SocketBase.DefaultConnection">
             <summary>
@@ -355,297 +687,57 @@
             已入列
             </summary>
         </member>
-        <member name="T:Sodao.FastSocket.SocketBase.StartSendingHandler">
+        <member name="T:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1">
             <summary>
-            begin send handler
+            a non-locking queue.
             </summary>
-            <param name="connection"></param>
-            <param name="packet"></param>
+            <typeparam name="T"></typeparam>
         </member>
-        <member name="T:Sodao.FastSocket.SocketBase.Packet">
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.#ctor">
             <summary>
-            packet
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.SocketBase.Packet.SentSize">
-            <summary>
-            get or set sent size.
+            Initializes a new instance of the <see cref="T:InterlockedQueue"/> class.
             </summary>
         </member>
-        <member name="F:Sodao.FastSocket.SocketBase.Packet.BeginTime">
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Dequeue(`0@)">
             <summary>
-            get begin time
+            Removes and returns the item at the beginning of the <see cref="T:InterlockedQueue"/>.
+            </summary>
+            <param name="value">The object that is removed from the beginning of the <see cref="T:InterlockedQueue"/>.</param>
+            <returns><value>true</value> if an item was successfully dequeued; otherwise <value>false</value>.</returns>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Peek(`0@)">
+            <summary>
+            peek
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Enqueue(`0)">
+            <summary>
+            Adds an object to the end of the <see cref="T:InterlockedQueue"/>.
+            </summary>
+            <param name="value">The item to be added to the <see cref="T:InterlockedQueue"/>. The value can be <value>null</value>.</param>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Node">
+            <summary>
+            node
             </summary>
         </member>
-        <member name="F:Sodao.FastSocket.SocketBase.Packet.Payload">
+        <member name="F:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Node.Value">
             <summary>
-            get payload
+            value
             </summary>
         </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Packet.#ctor(System.Byte[])">
+        <member name="F:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Node.Next">
+            <summary>
+            next
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Node.#ctor(`0)">
             <summary>
             new
             </summary>
-            <param name="payload"></param>
-            <exception cref="T:System.ArgumentNullException">payload is null.</exception>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Packet.IsSent">
-            <summary>
-            获取一个值，该值指示当前packet是否已发送完毕.
-            </summary>
-            <returns>true表示已发送完毕</returns>
-        </member>
-        <member name="P:Sodao.FastSocket.SocketBase.Packet.Tag">
-            <summary>
-            get or set tag object
-            </summary>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.DisconnectedHandler">
-            <summary>
-            connection disconnected delegate
-            </summary>
-            <param name="connection"></param>
-            <param name="ex"></param>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.ErrorHandler">
-            <summary>
-            error delegate
-            </summary>
-            <param name="connection"></param>
-            <param name="ex"></param>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.SendCallbackHandler">
-            <summary>
-            send callback delegate
-            </summary>
-            <param name="connection"></param>
-            <param name="e"></param>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.SendCallbackEventArgs">
-            <summary>
-            send callback eventArgs
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.SocketBase.SendCallbackEventArgs.Packet">
-            <summary>
-            packet
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.SocketBase.SendCallbackEventArgs.Status">
-            <summary>
-            状态
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.SendCallbackEventArgs.#ctor(Sodao.FastSocket.SocketBase.Packet,Sodao.FastSocket.SocketBase.SendCallbackStatus)">
-            <summary>
-            new
-            </summary>
-            <param name="packet"></param>
-            <param name="status"></param>
-            <exception cref="T:System.ArgumentNullException">packet is null</exception>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.SendCallbackStatus">
-            <summary>
-            packet send status
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.SocketBase.SendCallbackStatus.Success">
-            <summary>
-            发送成功
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.SocketBase.SendCallbackStatus.Failed">
-            <summary>
-            发送失败
-            </summary>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.MessageReceivedHandler">
-            <summary>
-            message received delegate
-            </summary>
-            <param name="connection"></param>
-            <param name="e"></param>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.MessageProcessHandler">
-            <summary>
-            消息处理handler
-            </summary>
-            <param name="buffer"></param>
-            <param name="readlength"></param>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.MessageReceivedEventArgs">
-            <summary>
-            message received eventArgs
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.SocketBase.MessageReceivedEventArgs.Buffer">
-            <summary>
-            Buffer
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.MessageReceivedEventArgs.#ctor(System.ArraySegment{System.Byte},Sodao.FastSocket.SocketBase.MessageProcessHandler)">
-            <summary>
-            new
-            </summary>
-            <param name="buffer"></param>
-            <param name="processCallback"></param>
-            <exception cref="T:System.ArgumentNullException">processCallback is null</exception>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.MessageReceivedEventArgs.SetReadlength(System.Int32)">
-            <summary>
-            设置已读取长度
-            </summary>
-            <param name="readlength"></param>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.IHost">
-            <summary>
-            socket connection host interface
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.IHost.NextConnectionID">
-            <summary>
-            生成下一个连接ID
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.IHost.GetConnectionByID(System.Int64)">
-            <summary>
-            get <see cref="T:Sodao.FastSocket.SocketBase.IConnection"/> by connectionID
-            </summary>
-            <param name="connectionID"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.IHost.Start">
-            <summary>
-            启动
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.IHost.Stop">
-            <summary>
-            停止
-            </summary>
-        </member>
-        <member name="P:Sodao.FastSocket.SocketBase.IHost.SocketBufferSize">
-            <summary>
-            get socket buffer size
-            </summary>
-        </member>
-        <member name="P:Sodao.FastSocket.SocketBase.IHost.MessageBufferSize">
-            <summary>
-            get message buffer size
-            </summary>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.BaseHost">
-            <summary>
-            base host
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.SocketBase.BaseHost._listConnections">
-            <summary>
-            connection collection
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.#ctor(System.Int32,System.Int32)">
-            <summary>
-            new
-            </summary>
-            <param name="socketBufferSize"></param>
-            <param name="messageBufferSize"></param>
-            <exception cref="T:System.ArgumentOutOfRangeException">socketBufferSize</exception>
-            <exception cref="T:System.ArgumentOutOfRangeException">messageBufferSize</exception>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.NextConnectionID">
-            <summary>
-            生成下一个连接ID
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.GetConnectionByID(System.Int64)">
-            <summary>
-            get <see cref="T:Sodao.FastSocket.SocketBase.IConnection"/> by connectionID
-            </summary>
-            <param name="connectionID"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.Start">
-            <summary>
-            启动
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.Stop">
-            <summary>
-            停止
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.RegisterConnection(Sodao.FastSocket.SocketBase.IConnection)">
-            <summary>
-            register connection
-            </summary>
-            <param name="connection"></param>
-            <exception cref="T:System.ArgumentNullException">connection is null</exception>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.OnConnected(Sodao.FastSocket.SocketBase.IConnection)">
-            <summary>
-            OnConnected
-            </summary>
-            <param name="connection"></param>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.OnStartSending(Sodao.FastSocket.SocketBase.IConnection,Sodao.FastSocket.SocketBase.Packet)">
-            <summary>
-            OnStartSending
-            </summary>
-            <param name="connection"></param>
-            <param name="packet"></param>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.OnSendCallback(Sodao.FastSocket.SocketBase.IConnection,Sodao.FastSocket.SocketBase.SendCallbackEventArgs)">
-            <summary>
-            OnSendCallback
-            </summary>
-            <param name="connection"></param>
-            <param name="e"></param>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.OnMessageReceived(Sodao.FastSocket.SocketBase.IConnection,Sodao.FastSocket.SocketBase.MessageReceivedEventArgs)">
-            <summary>
-            OnMessageReceived
-            </summary>
-            <param name="connection"></param>
-            <param name="e"></param>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.OnDisconnected(Sodao.FastSocket.SocketBase.IConnection,System.Exception)">
-            <summary>
-            OnDisconnected
-            </summary>
-            <param name="connection"></param>
-            <param name="ex"></param>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.OnError(Sodao.FastSocket.SocketBase.IConnection,System.Exception)">
-            <summary>
-            OnError
-            </summary>
-            <param name="connection"></param>
-            <param name="ex"></param>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.GetSocketAsyncEventArgs">
-            <summary>
-            get
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.BaseHost.ReleaseSocketAsyncEventArgs(System.Net.Sockets.SocketAsyncEventArgs)">
-            <summary>
-            release
-            </summary>
-            <param name="e"></param>
-        </member>
-        <member name="P:Sodao.FastSocket.SocketBase.BaseHost.SocketBufferSize">
-            <summary>
-            get socket buffer size
-            </summary>
-        </member>
-        <member name="P:Sodao.FastSocket.SocketBase.BaseHost.MessageBufferSize">
-            <summary>
-            get message buffer size
-            </summary>
+            <param name="value"></param>
         </member>
         <member name="T:Sodao.FastSocket.SocketBase.Utils.ConsistentHashContainer`1">
             <summary>
@@ -722,210 +814,57 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:Sodao.FastSocket.SocketBase.Utils.Date">
+        <member name="T:Sodao.FastSocket.SocketBase.SendCallbackHandler">
             <summary>
-            关于时间的一些操作
+            send callback delegate
+            </summary>
+            <param name="connection"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.SendCallbackEventArgs">
+            <summary>
+            send callback eventArgs
             </summary>
         </member>
-        <member name="F:Sodao.FastSocket.SocketBase.Utils.Date.unixEpoch">
+        <member name="F:Sodao.FastSocket.SocketBase.SendCallbackEventArgs.Packet">
             <summary>
-            unix下的纪元时间
+            packet
             </summary>
         </member>
-        <member name="F:Sodao.FastSocket.SocketBase.Utils.Date.dateTimeMaxValueMillisecondsSinceEpoch">
+        <member name="F:Sodao.FastSocket.SocketBase.SendCallbackEventArgs.Status">
             <summary>
-            the max milliseconds since epoch.
+            状态
             </summary>
         </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.ToUniversalTime(System.DateTime)">
-            <summary>
-            Converts a DateTime to UTC (with special handling for MinValue and MaxValue).
-            </summary>
-            <param name="dateTime">A DateTime.</param>
-            <returns>The DateTime in UTC.</returns>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.ToMillisecondsSinceEpoch(System.DateTime)">
-            <summary>
-            Converts a DateTime to number of milliseconds since Unix epoch.
-            </summary>
-            <param name="dateTime">A DateTime.</param>
-            <returns>Number of seconds since Unix epoch.</returns>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.ToSecondsSinceEpoch(System.DateTime)">
-            <summary>
-            Converts a DateTime to number of seconds since Unix epoch.
-            </summary>
-            <param name="dateTime">A DateTime.</param>
-            <returns>Number of seconds since Unix epoch.</returns>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.ToDateTimeFromMillisecondsSinceEpoch(System.Int64)">
-            <summary>
-            Converts from number of milliseconds since Unix epoch to DateTime.
-            </summary>
-            <param name="millisecondsSinceEpoch">The number of milliseconds since Unix epoch.</param>
-            <returns>A DateTime.</returns>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.ToDateTimeFromSecondsSinceEpoch(System.Int64)">
-            <summary>
-            Converts from number of seconds since Unix epoch to DateTime.
-            </summary>
-            <param name="secondsSinceEpoch">The number of seconds since Unix epoch.</param>
-            <returns>A DateTime.</returns>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.ToLocalTime(System.DateTime,System.DateTimeKind)">
-            <summary>
-            Converts a DateTime to local time (with special handling for MinValue and MaxValue).
-            </summary>
-            <param name="dateTime">A DateTime.</param>
-            <param name="kind">A DateTimeKind.</param>
-            <returns>The DateTime in local time.</returns>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.Date.SpecifyKind(System.DateTime,System.DateTimeKind)">
-            <summary>
-            SpecifyKind
-            </summary>
-            <param name="dt"></param>
-            <param name="kind"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.Utils.DisposableBase">
-            <summary>
-            disposable base
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.DisposableBase.Finalize">
-            <summary>
-            finalize
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.DisposableBase.Dispose">
-            <summary>
-            dispose
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.DisposableBase.Dispose(System.Boolean)">
-            <summary>
-            Dispose
-            </summary>
-            <param name="disposing">true表示清理托管资源</param>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.DisposableBase.Free(System.Boolean)">
-            <summary>
-            free
-            </summary>
-            <param name="disposing"></param>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.DisposableBase.CheckDisposedWithException">
-            <summary>
-            检测并抛出<see cref="T:System.ObjectDisposedException"/>
-            </summary>
-        </member>
-        <member name="P:Sodao.FastSocket.SocketBase.Utils.DisposableBase.IsDisposed">
-            <summary>
-            true表示已disposed
-            </summary>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1">
-            <summary>
-            a non-locking queue.
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:InterlockedQueue"/> class.
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Dequeue(`0@)">
-            <summary>
-            Removes and returns the item at the beginning of the <see cref="T:InterlockedQueue"/>.
-            </summary>
-            <param name="value">The object that is removed from the beginning of the <see cref="T:InterlockedQueue"/>.</param>
-            <returns><value>true</value> if an item was successfully dequeued; otherwise <value>false</value>.</returns>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Peek(`0@)">
-            <summary>
-            peek
-            </summary>
-            <param name="value"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Enqueue(`0)">
-            <summary>
-            Adds an object to the end of the <see cref="T:InterlockedQueue"/>.
-            </summary>
-            <param name="value">The item to be added to the <see cref="T:InterlockedQueue"/>. The value can be <value>null</value>.</param>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Node">
-            <summary>
-            node
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Node.Value">
-            <summary>
-            value
-            </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Node.Next">
-            <summary>
-            next
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedQueue`1.Node.#ctor(`0)">
+        <member name="M:Sodao.FastSocket.SocketBase.SendCallbackEventArgs.#ctor(Sodao.FastSocket.SocketBase.Packet,Sodao.FastSocket.SocketBase.SendCallbackStatus)">
             <summary>
             new
             </summary>
-            <param name="value"></param>
+            <param name="packet"></param>
+            <param name="status"></param>
+            <exception cref="T:System.ArgumentNullException">packet is null</exception>
         </member>
-        <member name="T:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1">
+        <member name="T:Sodao.FastSocket.SocketBase.SendCallbackStatus">
             <summary>
-            non-locking stack.
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.#ctor">
-            <summary>
-            new
+            packet send status
             </summary>
         </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.Push(`0)">
+        <member name="F:Sodao.FastSocket.SocketBase.SendCallbackStatus.Success">
             <summary>
-            push
-            </summary>
-            <param name="item"></param>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.TryPop(`0@)">
-            <summary>
-            try pop
-            </summary>
-            <param name="value"></param>
-            <returns></returns>
-        </member>
-        <member name="P:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.Count">
-            <summary>
-            get count
+            发送成功
             </summary>
         </member>
-        <member name="T:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.Node">
+        <member name="F:Sodao.FastSocket.SocketBase.SendCallbackStatus.Failed">
             <summary>
-            node
+            发送失败
             </summary>
         </member>
-        <member name="F:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.Node.Value">
+        <member name="T:Sodao.FastSocket.SocketBase.DisconnectedHandler">
             <summary>
-            value
+            connection disconnected delegate
             </summary>
-        </member>
-        <member name="F:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.Node.Next">
-            <summary>
-            next
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.InterlockedStack`1.Node.#ctor(`0)">
-            <summary>
-            new
-            </summary>
-            <param name="value"></param>
+            <param name="connection"></param>
+            <param name="ex"></param>
         </member>
         <member name="T:Sodao.FastSocket.SocketBase.Utils.IPUtility">
             <summary>
@@ -1014,6 +953,95 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:Sodao.FastSocket.SocketBase.MessageReceivedHandler">
+            <summary>
+            message received delegate
+            </summary>
+            <param name="connection"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.MessageProcessHandler">
+            <summary>
+            消息处理handler
+            </summary>
+            <param name="buffer"></param>
+            <param name="readlength"></param>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.MessageReceivedEventArgs">
+            <summary>
+            message received eventArgs
+            </summary>
+        </member>
+        <member name="F:Sodao.FastSocket.SocketBase.MessageReceivedEventArgs.Buffer">
+            <summary>
+            Buffer
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.MessageReceivedEventArgs.#ctor(System.ArraySegment{System.Byte},Sodao.FastSocket.SocketBase.MessageProcessHandler)">
+            <summary>
+            new
+            </summary>
+            <param name="buffer"></param>
+            <param name="processCallback"></param>
+            <exception cref="T:System.ArgumentNullException">processCallback is null</exception>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.MessageReceivedEventArgs.SetReadlength(System.Int32)">
+            <summary>
+            设置已读取长度
+            </summary>
+            <param name="readlength"></param>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.Utils.ReflectionHelper">
+            <summary>
+            反射帮助类。
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.ReflectionHelper.GetImplementObjects``1(System.Reflection.Assembly)">
+            <summary>
+            获取实现了指定类口类型的基类实例。
+            </summary>
+            <typeparam name="T">接口类型</typeparam>
+            <param name="assembly">指定的程序集</param>
+            <returns></returns>
+            <exception cref="T:System.ArgumentNullException">assembly is null</exception>
+        </member>
+        <member name="T:Sodao.FastSocket.SocketBase.Utils.DisposableBase">
+            <summary>
+            disposable base
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.DisposableBase.Finalize">
+            <summary>
+            finalize
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.DisposableBase.Dispose">
+            <summary>
+            dispose
+            </summary>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.DisposableBase.Dispose(System.Boolean)">
+            <summary>
+            Dispose
+            </summary>
+            <param name="disposing">true表示清理托管资源</param>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.DisposableBase.Free(System.Boolean)">
+            <summary>
+            free
+            </summary>
+            <param name="disposing"></param>
+        </member>
+        <member name="M:Sodao.FastSocket.SocketBase.Utils.DisposableBase.CheckDisposedWithException">
+            <summary>
+            检测并抛出<see cref="T:System.ObjectDisposedException"/>
+            </summary>
+        </member>
+        <member name="P:Sodao.FastSocket.SocketBase.Utils.DisposableBase.IsDisposed">
+            <summary>
+            true表示已disposed
+            </summary>
+        </member>
         <member name="T:Sodao.FastSocket.SocketBase.Utils.NetworkBitConverter">
             <summary>
             network bit converter.
@@ -1063,34 +1091,6 @@
             <param name="value"></param>
             <param name="startIndex"></param>
             <returns></returns>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.Utils.ReflectionHelper">
-            <summary>
-            反射帮助类。
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.ReflectionHelper.GetImplementObjects``1(System.Reflection.Assembly)">
-            <summary>
-            获取实现了指定类口类型的基类实例。
-            </summary>
-            <typeparam name="T">接口类型</typeparam>
-            <param name="assembly">指定的程序集</param>
-            <returns></returns>
-            <exception cref="T:System.ArgumentNullException">assembly is null</exception>
-        </member>
-        <member name="T:Sodao.FastSocket.SocketBase.Utils.TaskEx">
-            <summary>
-            task ex
-            </summary>
-        </member>
-        <member name="M:Sodao.FastSocket.SocketBase.Utils.TaskEx.Delay(System.Int32,System.Action)">
-            <summary>
-            延迟执行某个动作
-            </summary>
-            <param name="dueTime"></param>
-            <param name="callback"></param>
-            <exception cref="T:System.ArgumentOutOfRangeException">dueTime</exception>
-            <exception cref="T:System.ArgumentNullException">callback is null</exception>
         </member>
     </members>
 </doc>

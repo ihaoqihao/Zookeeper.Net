@@ -707,7 +707,9 @@ namespace Sodao.Zookeeper
                     this.OnKeeperStateChanged(Data.KeeperState.SyncConnected);
 
                     //try send pending queue request on socket connected.
-                    base.TrySendAllPendingRequest();
+                    var requests = base.DequeueAllFromPendingQueue();
+                    if (requests == null) return;
+                    for (int i = 0, l = requests.Length; i < l; i++) connection.BeginSend(requests[i]);
                 }) { Tag = "connect" };
 
             connection.UserData = request;
