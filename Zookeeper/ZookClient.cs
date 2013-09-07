@@ -104,17 +104,19 @@ namespace Sodao.Zookeeper
         /// <summary>
         /// on send success
         /// </summary>
+        /// <param name="connection"></param>
         /// <param name="request"></param>
-        protected override void OnSendSucess(Request<ZookResponse> request)
+        protected override void OnSendSucess(IConnection connection, Request<ZookResponse> request)
         {
-            base.OnSendSucess(request);
+            base.OnSendSucess(connection, request);
             this._lastSendTime = DateTime.UtcNow;
         }
         /// <summary>
         /// on send failed
         /// </summary>
+        /// <param name="connection"></param>
         /// <param name="request"></param>
-        protected override void OnSendFailed(Request<ZookResponse> request)
+        protected override void OnSendFailed(IConnection connection, Request<ZookResponse> request)
         {
             if (request.Tag == null) this.Send(request);
         }
