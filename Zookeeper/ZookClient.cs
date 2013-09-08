@@ -1,38 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Sodao.FastSocket.Client;
 using Sodao.FastSocket.SocketBase;
-using Sodao.FastSocket.SocketBase.Utils;
 
 namespace Sodao.Zookeeper
 {
     /// <summary>
     /// zookeeper client
     /// </summary>
-    public sealed class ZookClient : BaseSocketClient<ZookResponse>, IZookClient
+    public sealed class ZookClient : PooledSocketClient<ZookResponse>, IZookClient
     {
         #region Private Members
         private readonly string _chrootPath = null;
+        private ZookServerPool _zkServerPool = null;
+
         private Data.KeeperState _currentState = Data.KeeperState.Disconnected;
+        private DateTime _lastSentTime = DateTime.UtcNow;
+        internal long _lastZxid = 0;//最近一次的zk事务ID
+
         private readonly ZookWatcherManager _watcherManager = null;
-        private long _lastZxid = 0;//最近一次的zk事务ID
-        private int _protocolVersion = 0;//zk协议版本
-        private int _negotiatedSessionTimeout;//zk协商的timeout，毫秒数
-        private long _sessionID = 0L;//sessionID
-        private byte[] _sessionPassword = new byte[16];//session password
         private readonly List<Data.AuthRequest> _authInfolist = new List<Data.AuthRequest>();
 
-        private readonly EndPoint[] _serverlist = null;//zk集群服务器地址列表
-        private int _hostAcquireTimes = 0;
-        private IConnection _currentConnection = null;//当前关联的socket connection
-
-        private TimeSpan _sessionTimeout;
         private Timer _timer = null;
-        private DateTime _lastSendTime = DateTime.UtcNow;
         #endregion
 
         #region Constructors
@@ -57,50 +49,47 @@ namespace Sodao.Zookeeper
             if (string.IsNullOrEmpty(connectionString)) throw new ArgumentNullException("connectionString");
             if (!string.IsNullOrEmpty(chrootPath)) Utils.PathUtils.ValidatePath(chrootPath);
 
-            this._serverlist = connectionString.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries).OrderBy(
-                c => Guid.NewGuid()).Select(c =>
-                {
-                    var index = c.IndexOf(":");
-                    return new IPEndPoint(IPAddress.Parse(c.Substring(0, index)), int.Parse(c.Substring(index + 1)));
-                }).ToArray();
             this._chrootPath = chrootPath;
-            this._sessionTimeout = sessionTimeout;
             this._watcherManager = new ZookWatcherManager(defaultWatcher);
+            this._zkServerPool.SetOptions(this, connectionString, (int)sessionTimeout.TotalMilliseconds);
 
-            //建立socket connection
-            this.CreateSocketConnection();
-            //启动一个定时器，用于发送ping命令
             this.StartLoopPing();
         }
         #endregion
 
         #region Override Methods
         /// <summary>
-        /// OnConnected
+        /// InitServerPool
         /// </summary>
-        /// <param name="connection"></param>
-        protected override void OnConnected(IConnection connection)
+        /// <returns></returns>
+        protected override IServerPool InitServerPool()
         {
-            base.OnConnected(connection);
-            //当socket连接建立时，发送相关命令到zk，请求建立session.
-            this.ConnectToZookeeper(connection);
+            return this._zkServerPool = new ZookServerPool();
         }
         /// <summary>
-        /// OnDisconnected
+        /// on server available
         /// </summary>
-        /// <param name="connection"></param>
-        /// <param name="ex"></param>
-        protected override void OnDisconnected(IConnection connection, Exception ex)
+        protected override void OnServerPoolServerAvailable()
         {
-            base.OnDisconnected(connection, ex);
-
-            this._currentConnection = null;
-            this._currentState = Data.KeeperState.Disconnected;
-            this.OnKeeperStateChanged(Data.KeeperState.Disconnected);
-
-            //socket连接断开时,在10~100毫秒之后重连.
-            TaskEx.Delay(new Random().Next(10, 100), this.CreateSocketConnection);
+            base.OnServerPoolServerAvailable();
+            //to do...
         }
+        ///// <summary>
+        ///// OnDisconnected
+        ///// </summary>
+        ///// <param name="connection"></param>
+        ///// <param name="ex"></param>
+        //protected override void OnDisconnected(IConnection connection, Exception ex)
+        //{
+        //    base.OnDisconnected(connection, ex);
+
+        //    this._currentConnection = null;
+        //    this._currentState = Data.KeeperState.Disconnected;
+        //    this.OnKeeperStateChanged(Data.KeeperState.Disconnected);
+
+        //    //socket连接断开时,在10~100毫秒之后重连.
+        //    TaskEx.Delay(new Random().Next(10, 100), this.CreateSocketConnection);
+        //}
         /// <summary>
         /// on send success
         /// </summary>
@@ -109,16 +98,7 @@ namespace Sodao.Zookeeper
         protected override void OnSendSucess(IConnection connection, Request<ZookResponse> request)
         {
             base.OnSendSucess(connection, request);
-            this._lastSendTime = DateTime.UtcNow;
-        }
-        /// <summary>
-        /// on send failed
-        /// </summary>
-        /// <param name="connection"></param>
-        /// <param name="request"></param>
-        protected override void OnSendFailed(IConnection connection, Request<ZookResponse> request)
-        {
-            if (request.Tag == null) this.Send(request);
+            this._lastSentTime = DateTime.UtcNow;
         }
         /// <summary>
         /// 处理未知response
@@ -131,19 +111,10 @@ namespace Sodao.Zookeeper
 
             Data.WatcherEvent wevent = null;
             try { wevent = Utils.Marshaller.Deserialize<Data.WatcherEvent>(response.Payload); }
-            catch { return; }
+            catch (Exception ex) { Sodao.FastSocket.SocketBase.Log.Trace.Error(ex.Message, ex); return; }
 
-            this._watcherManager.Invoke(new Data.WatchedEvent(wevent.Type, wevent.State, Utils.PathUtils.RemoveChroot(this._chrootPath, wevent.Path)));
-        }
-        /// <summary>
-        /// send
-        /// </summary>
-        /// <param name="request"></param>
-        protected override void Send(Request<ZookResponse> request)
-        {
-            var conn = this._currentConnection;
-            if (conn != null) { conn.BeginSend(request); return; }
-            if (request.Tag == null) base.EnqueueToPendingQueue(request);
+            var e = new Data.WatchedEvent(wevent.Type, wevent.State, Utils.PathUtils.RemoveChroot(this._chrootPath, wevent.Path));
+            this._watcherManager.Invoke(e);
         }
         #endregion
 
@@ -159,34 +130,6 @@ namespace Sodao.Zookeeper
         public Data.KeeperState CurrentKeeperState
         {
             get { return this._currentState; }
-        }
-        /// <summary>
-        /// get sessionID
-        /// </summary>
-        public long SessionID
-        {
-            get { return this._sessionID; }
-        }
-        /// <summary>
-        /// get session password
-        /// </summary>
-        public byte[] SessionPassword
-        {
-            get { return this._sessionPassword; }
-        }
-        /// <summary>
-        /// get session timeout
-        /// </summary>
-        public TimeSpan SessionTimeout
-        {
-            get { return this._sessionTimeout; }
-        }
-        /// <summary>
-        /// get zk negotiated session timeout, milliseconds
-        /// </summary>
-        public int NegotiatedSessionTimeout
-        {
-            get { return this._negotiatedSessionTimeout; }
         }
         /// <summary>
         /// true表示禁用自动重新注册watch, 默认为false
@@ -655,68 +598,56 @@ namespace Sodao.Zookeeper
         #region Private Methods
 
         #region Connect
-        /// <summary>
-        /// create socket connection
-        /// </summary>
-        private void CreateSocketConnection()
-        {
-            var endPoint = this._serverlist[(Interlocked.Increment(ref this._hostAcquireTimes) & 0x7fffffff) % this._serverlist.Length];
-            SocketConnector.BeginConnect(endPoint, this, connection =>
-            {
-                if (connection == null) { TaskEx.Delay(new Random().Next(500, 1500), this.CreateSocketConnection); return; }
-                base.RegisterConnection(connection);
-            });
-        }
-        /// <summary>
-        /// connect to zookeeper
-        /// </summary>
-        /// <param name="connection"></param>
-        private void ConnectToZookeeper(IConnection connection)
-        {
-            var request = new Request<ZookResponse>(base.NextRequestSeqID(), "connect", Utils.Marshaller.Serialize(
-                new Data.ConnectRequest(this._protocolVersion, this._lastZxid, (int)this._sessionTimeout.TotalMilliseconds, this._sessionID, this._sessionPassword), true),
-                ex => connection.BeginDisconnect(), response =>
-                {
-                    Data.ConnectResponse result = null;
-                    try { result = Utils.Marshaller.Deserialize<Data.ConnectResponse>(response.Payload); }
-                    catch { connection.BeginDisconnect(); return; }
+        ///// <summary>
+        ///// connect to zookeeper
+        ///// </summary>
+        ///// <param name="connection"></param>
+        //private void ConnectToZookeeper(IConnection connection)
+        //{
+        //    var request = new Request<ZookResponse>(base.NextRequestSeqID(), "connect", Utils.Marshaller.Serialize(
+        //        new Data.ConnectRequest(this._protocolVersion, this._lastZxid, (int)this._sessionTimeout.TotalMilliseconds, this._sessionID, this._sessionPassword), true),
+        //        ex => connection.BeginDisconnect(), response =>
+        //        {
+        //            Data.ConnectResponse result = null;
+        //            try { result = Utils.Marshaller.Deserialize<Data.ConnectResponse>(response.Payload); }
+        //            catch { connection.BeginDisconnect(); return; }
 
-                    if (result.SessionTimeOut <= 0)//session expired
-                    {
-                        this._protocolVersion = 0;
-                        this._sessionID = 0;
-                        this._negotiatedSessionTimeout = 0;
-                        this._sessionPassword = new byte[16];
+        //            if (result.SessionTimeOut <= 0)//session expired
+        //            {
+        //                this._protocolVersion = 0;
+        //                this._sessionID = 0;
+        //                this._negotiatedSessionTimeout = 0;
+        //                this._sessionPassword = new byte[16];
 
-                        connection.BeginDisconnect();
+        //                connection.BeginDisconnect();
 
-                        this._currentState = Data.KeeperState.Expired;
-                        this.OnKeeperStateChanged(Data.KeeperState.Expired);
-                        return;
-                    }
+        //                this._currentState = Data.KeeperState.Expired;
+        //                this.OnKeeperStateChanged(Data.KeeperState.Expired);
+        //                return;
+        //            }
 
-                    this._protocolVersion = result.ProtocolVersion;
-                    this._negotiatedSessionTimeout = result.SessionTimeOut;
-                    this._sessionID = result.SessionID;
-                    this._sessionPassword = result.SessionPassword;
+        //            this._protocolVersion = result.ProtocolVersion;
+        //            this._negotiatedSessionTimeout = result.SessionTimeOut;
+        //            this._sessionID = result.SessionID;
+        //            this._sessionPassword = result.SessionPassword;
 
-                    this._currentConnection = connection;
+        //            this._currentConnection = connection;
 
-                    this.ResetAuthInfo(connection);
-                    if (!this.DisableAutoWatchReset) this.ResetWatches(connection);
+        //            this.ResetAuthInfo(connection);
+        //            if (!this.DisableAutoWatchReset) this.ResetWatches(connection);
 
-                    this._currentState = Data.KeeperState.SyncConnected;
-                    this.OnKeeperStateChanged(Data.KeeperState.SyncConnected);
+        //            this._currentState = Data.KeeperState.SyncConnected;
+        //            this.OnKeeperStateChanged(Data.KeeperState.SyncConnected);
 
-                    //try send pending queue request on socket connected.
-                    var requests = base.DequeueAllFromPendingQueue();
-                    if (requests == null) return;
-                    for (int i = 0, l = requests.Length; i < l; i++) connection.BeginSend(requests[i]);
-                }) { Tag = "connect" };
+        //            //try send pending queue request on socket connected.
+        //            var requests = base.DequeueAllFromPendingQueue();
+        //            if (requests == null) return;
+        //            for (int i = 0, l = requests.Length; i < l; i++) connection.BeginSend(requests[i]);
+        //        }) { Tag = "connect" };
 
-            connection.UserData = request;
-            connection.BeginSend(request);
-        }
+        //    connection.UserData = request;
+        //    connection.BeginSend(request);
+        //}
         /// <summary>
         /// close session
         /// </summary>
@@ -772,15 +703,12 @@ namespace Sodao.Zookeeper
         {
             this._timer = new Timer(_ =>
             {
-                this._timer.Change(Timeout.Infinite, Timeout.Infinite);
+                var timeout = this._zkServerPool._negotiatedSessionTimeout;
+                var lastSentTime = this._lastSentTime;
+                if (timeout < 0 || DateTime.UtcNow.Subtract(lastSentTime).TotalMilliseconds < timeout * 0.6) return;
 
-                var timeout = this._negotiatedSessionTimeout;
-                var lastSendTime = this._lastSendTime;
-                if (timeout > 0 && DateTime.UtcNow.Subtract(lastSendTime).TotalMilliseconds > timeout * 0.6)
-                    this.SendPacket(new Packet(Utils.Marshaller.Serialize(-2, Data.OpCode.Ping, null, true)));
-
-                this._timer.Change(500, Timeout.Infinite);
-            }, null, 500, Timeout.Infinite);
+                this.SendPacket(new Packet(Utils.Marshaller.Serialize(-2, Data.OpCode.Ping, null, true)));
+            }, null, 0, 500);
         }
         #endregion
 
@@ -789,10 +717,12 @@ namespace Sodao.Zookeeper
         /// send packet
         /// </summary>
         /// <param name="packet"></param>
-        private void SendPacket(Packet packet)
+        /// <returns></returns>
+        private bool SendPacket(Packet packet)
         {
-            var conn = this._currentConnection;
-            if (conn != null) conn.BeginSend(packet);
+            var connection = this._zkServerPool.Acquire();
+            if (connection == null) return false;
+            connection.BeginSend(packet); return true;
         }
         /// <summary>
         /// execute async

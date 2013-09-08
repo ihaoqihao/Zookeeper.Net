@@ -97,6 +97,7 @@
     <Compile Include="ZookClientFactory.cs" />
     <Compile Include="ZookClient.cs" />
     <Compile Include="ZookClientPool.cs" />
+    <Compile Include="ZookServerPool.cs" />
     <Compile Include="ZookProtocol.cs" />
     <Compile Include="ZookResponse.cs" />
     <Compile Include="ZookWatcherManager.cs" />

@@ -21,34 +21,6 @@ namespace Sodao.Zookeeper
             get;
         }
         /// <summary>
-        /// get sessionID
-        /// </summary>
-        long SessionID
-        {
-            get;
-        }
-        /// <summary>
-        /// get session password
-        /// </summary>
-        byte[] SessionPassword
-        {
-            get;
-        }
-        /// <summary>
-        /// get session timeout
-        /// </summary>
-        TimeSpan SessionTimeout
-        {
-            get;
-        }
-        /// <summary>
-        /// get zk negotiated session timeout, milliseconds
-        /// </summary>
-        int NegotiatedSessionTimeout
-        {
-            get;
-        }
-        /// <summary>
         /// true表示禁用自动重新注册watch, 默认为false
         /// </summary>
         bool DisableAutoWatchReset
