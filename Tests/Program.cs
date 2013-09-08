@@ -13,6 +13,7 @@ namespace Tests
         static void Main(string[] args)
         {
             Sodao.FastSocket.SocketBase.Log.Trace.EnableConsole();
+            Sodao.FastSocket.SocketBase.Log.Trace.EnableDiagnostic();
 
             var client = Sodao.Zookeeper.ZookClientPool.Get("zk1");
 
