@@ -12,6 +12,8 @@ namespace Tests
     {
         static void Main(string[] args)
         {
+            Sodao.FastSocket.SocketBase.Log.Trace.EnableConsole();
+
             var client = Sodao.Zookeeper.ZookClientPool.Get("zk1");
 
             //create a node
