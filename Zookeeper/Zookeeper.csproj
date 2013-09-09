@@ -35,7 +35,7 @@
   <ItemGroup>
     <Reference Include="FastSocket.Client, Version=1.0.0.5, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\fastsocket_client.1.0.0.18\lib\net40\FastSocket.Client.dll</HintPath>
+      <HintPath>..\packages\fastsocket_client.1.0.0.19\lib\net40\FastSocket.Client.dll</HintPath>
     </Reference>
     <Reference Include="FastSocket.SocketBase, Version=1.0.0.5, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

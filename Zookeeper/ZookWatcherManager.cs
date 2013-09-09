@@ -213,7 +213,7 @@ namespace Sodao.Zookeeper
                     ThreadPool.QueueUserWorkItem(_ =>
                     {
                         try { watcher.Process(wevent); }
-                        catch { }
+                        catch (Exception ex) { Sodao.FastSocket.SocketBase.Log.Trace.Error(ex.Message, ex); }
                     });
                 }
             }

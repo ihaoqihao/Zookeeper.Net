@@ -15,13 +15,12 @@ namespace Sodao.Zookeeper
     {
         #region Private Members
         private ZookClient _zkClient = null;
-        private int _sessionTimeout;
 
         private EndPoint[] _serverlist = null;//zk集群服务器地址列表
         private int _hostAcquireTimes = 0;
 
         private int _protocolVersion = 0;//zk协议版本
-        internal int _negotiatedSessionTimeout;//zk协商的timeout，毫秒数
+        private int _negotiatedSessionTimeout;//zk协商的timeout，毫秒数
         private long _sessionID = 0L;//sessionID
         private byte[] _sessionPassword = new byte[16];//session password
 
@@ -36,7 +35,7 @@ namespace Sodao.Zookeeper
         /// <summary>
         /// serverAvailable
         /// </summary>
-        public event Action ServerAvailable;
+        public event Action<string, IConnection> ServerAvailable;
 
         /// <summary>
         /// Acquire
@@ -86,20 +85,18 @@ namespace Sodao.Zookeeper
 
         #region Internal Methods
         /// <summary>
-        /// set options
+        /// SetOptions
         /// </summary>
         /// <param name="zkClient"></param>
         /// <param name="connectionString"></param>
-        /// <param name="sessionTimeout"></param>
         /// <exception cref="ArgumentNullException">zkClient is null</exception>
         /// <exception cref="ArgumentNullException">connectionString is null or empty.</exception>
-        internal void SetOptions(ZookClient zkClient, string connectionString, int sessionTimeout)
+        internal void SetOptions(ZookClient zkClient, string connectionString)
         {
             if (zkClient == null) throw new ArgumentNullException("zkClient");
             if (string.IsNullOrEmpty(connectionString)) throw new ArgumentNullException("connectionString");
 
             this._zkClient = zkClient;
-            this._sessionTimeout = sessionTimeout;
             this._serverlist = connectionString
                 .Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries)
                 .OrderBy(c => Guid.NewGuid())
@@ -123,18 +120,19 @@ namespace Sodao.Zookeeper
 
                 connection.Disconnected += this.OnDisconnected;
                 this.FireConnected(endPoint.ToString(), connection);
-                this.ConnectToZookeeper(connection);
+                this.ConnectToZookeeper(endPoint.ToString(), connection);
             });
         }
         /// <summary>
         /// connect to zookeeper
         /// </summary>
+        /// <param name="name"></param>
         /// <param name="connection"></param>
-        private void ConnectToZookeeper(IConnection connection)
+        private void ConnectToZookeeper(string name, IConnection connection)
         {
             var connectRequest = new Data.ConnectRequest(this._protocolVersion,
                 this._zkClient._lastZxid,
-                this._sessionTimeout,
+                (int)this._zkClient._sessionTimeout.TotalMilliseconds,
                 this._sessionID,
                 this._sessionPassword);
 
@@ -155,7 +153,7 @@ namespace Sodao.Zookeeper
                         this._sessionPassword = new byte[16];
 
                         connection.BeginDisconnect(new ApplicationException("zookeeper session expired"));
-                        return;
+                        this._zkClient.SetKeeperState(Data.KeeperState.Expired); return;
                     }
 
                     this._protocolVersion = result.ProtocolVersion;
@@ -164,8 +162,9 @@ namespace Sodao.Zookeeper
                     this._sessionPassword = result.SessionPassword;
 
                     this._currConnection = connection;
-                    this.FireServerAvailable();
-                });
+                    this._zkClient.SetKeeperState(Data.KeeperState.SyncConnected);
+                    this.FireServerAvailable(name, connection);
+                }) { Tag = "connect" };
 
             connection.UserData = request;
             connection.BeginSend(request);
@@ -193,9 +192,11 @@ namespace Sodao.Zookeeper
         /// <summary>
         /// fire ServerAvailable
         /// </summary>
-        private void FireServerAvailable()
+        /// <param name="name"></param>
+        /// <param name="connection"></param>
+        private void FireServerAvailable(string name, IConnection connection)
         {
-            this.ServerAvailable();
+            this.ServerAvailable(name, connection);
         }
         #endregion
     }

@@ -16,18 +16,7 @@ namespace Sodao.Zookeeper
         /// <summary>
         /// get current keeperState
         /// </summary>
-        Data.KeeperState CurrentKeeperState
-        {
-            get;
-        }
-        /// <summary>
-        /// true表示禁用自动重新注册watch, 默认为false
-        /// </summary>
-        bool DisableAutoWatchReset
-        {
-            get;
-            set;
-        }
+        Data.KeeperState CurrentKeeperState { get; }
         /// <summary>
         /// Add the specified scheme:auth information to this connection.
         /// </summary>

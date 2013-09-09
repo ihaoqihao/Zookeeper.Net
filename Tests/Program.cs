@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using Sodao.Zookeeper;
 using Sodao.Zookeeper.Data;
 
@@ -16,40 +12,24 @@ namespace Tests
             Sodao.FastSocket.SocketBase.Log.Trace.EnableDiagnostic();
 
             var client = Sodao.Zookeeper.ZookClientPool.Get("zk1");
-
-            //create a node
-            client.Create("/test1", null, IDs.OPEN_ACL_UNSAFE, CreateModes.Ephemeral).ContinueWith(c =>
+            client.Register(new WatcherWrapper(e =>
             {
-                if (c.IsFaulted) Console.Write(string.Concat("error: ", c.Exception.ToString()));
-                else Console.WriteLine(c.Result);
-            });
-            //get child nodes
-            client.GetChildren("/", false).ContinueWith(c =>
-            {
-                if (c.IsFaulted) Console.Write(string.Concat("error: ", c.Exception.ToString()));
-                else
-                {
-                    foreach (var nodeName in c.Result)
-                        Console.WriteLine(nodeName);
-                }
-            });
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(e.Path);
+                Console.WriteLine(e.Type.ToString());
+                Console.WriteLine(e.State.ToString());
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }));
 
-            //remove /test1 node
-            Sodao.FastSocket.SocketBase.Utils.TaskEx.Delay(3000, () =>
+            var watcher = new ChildrenWatcher(client, "/", c =>
             {
-                client.Delete("/test1").ContinueWith(c =>
-                {
-                    if (c.IsFaulted) Console.Write(string.Concat("error: ", c.Exception.ToString()));
-                    else Console.WriteLine("/test1 was deleted");
-                });
+                Console.WriteLine(string.Join("-", c));
             });
-
-            //session node
-            var sessionNode = new SessionNode(client, "/sessionNode1", null, IDs.OPEN_ACL_UNSAFE);
 
             Console.ReadLine();
+            var sessionNode = new SessionNode(client, "/tempABC", null, IDs.OPEN_ACL_UNSAFE);
+            Console.ReadLine();
             sessionNode.Close();
-            Console.WriteLine("session node closed");
 
             Console.ReadLine();
         }
