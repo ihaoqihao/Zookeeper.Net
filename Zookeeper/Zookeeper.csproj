@@ -33,13 +33,13 @@
     <DocumentationFile>bin\Release\Zookeeper.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FastSocket.Client, Version=1.0.0.5, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="FastSocket.Client, Version=1.0.0.6, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\fastsocket_client.1.0.0.19\lib\net40\FastSocket.Client.dll</HintPath>
+      <HintPath>..\packages\fastsocket_client_1.0.0.6.1.0.0.0\lib\net40\FastSocket.Client.dll</HintPath>
     </Reference>
-    <Reference Include="FastSocket.SocketBase, Version=1.0.0.5, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="FastSocket.SocketBase, Version=1.0.0.6, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\fastsocket_base.1.0.0.18\lib\net40\FastSocket.SocketBase.dll</HintPath>
+      <HintPath>..\packages\fastsocket_base_1.0.0.6.1.0.0.0\lib\net40\FastSocket.SocketBase.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -97,7 +97,6 @@
     <Compile Include="ZookClientFactory.cs" />
     <Compile Include="ZookClient.cs" />
     <Compile Include="ZookClientPool.cs" />
-    <Compile Include="ZookServerPool.cs" />
     <Compile Include="ZookProtocol.cs" />
     <Compile Include="ZookResponse.cs" />
     <Compile Include="ZookWatcherManager.cs" />

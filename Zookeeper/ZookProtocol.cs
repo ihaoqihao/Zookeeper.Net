@@ -1,8 +1,8 @@
-﻿using System;
-using Sodao.FastSocket.Client;
+﻿using Sodao.FastSocket.Client;
 using Sodao.FastSocket.Client.Protocol;
 using Sodao.FastSocket.SocketBase;
 using Sodao.FastSocket.SocketBase.Utils;
+using System;
 
 namespace Sodao.Zookeeper
 {
@@ -12,22 +12,44 @@ namespace Sodao.Zookeeper
     public sealed class ZookProtocol : IProtocol<ZookResponse>
     {
         /// <summary>
-        /// find response
+        /// defautl seqId
+        /// </summary>
+        public int DefaultSyncSeqId
+        {
+            get { throw new NotImplementedException(); }
+        }
+        /// <summary>
+        /// true
+        /// </summary>
+        public bool IsAsync
+        {
+            get { return true; }
+        }
+        /// <summary>
+        /// Parse
         /// </summary>
         /// <param name="connection"></param>
         /// <param name="buffer"></param>
         /// <param name="readlength"></param>
         /// <returns></returns>
-        public ZookResponse FindResponse(IConnection connection, ArraySegment<byte> buffer, out int readlength)
+        public ZookResponse Parse(IConnection connection, ArraySegment<byte> buffer, out int readlength)
         {
-            if (buffer.Count < 4) { readlength = 0; return null; }
+            if (buffer.Count < 4)
+            {
+                readlength = 0;
+                return null;
+            }
 
             var payload = buffer.Array;
 
             //获取message length
             var messageLength = NetworkBitConverter.ToInt32(payload, buffer.Offset);
             readlength = messageLength + 4;
-            if (buffer.Count < readlength) { readlength = 0; return null; }
+            if (buffer.Count < readlength)
+            {
+                readlength = 0;
+                return null;
+            }
 
             //首次connect to zk response
             var connectRequest = connection.UserData as Request<ZookResponse>;
@@ -36,7 +58,7 @@ namespace Sodao.Zookeeper
                 connection.UserData = null;
                 var connectResponseBuffer = new byte[messageLength];
                 Buffer.BlockCopy(payload, buffer.Offset + 4, connectResponseBuffer, 0, messageLength);
-                return new ZookResponse(connectRequest.SeqID, connectResponseBuffer);
+                return new ZookResponse(connectRequest.SeqId, connectResponseBuffer);
             }
 
             var xid = NetworkBitConverter.ToInt32(payload, buffer.Offset + 4);

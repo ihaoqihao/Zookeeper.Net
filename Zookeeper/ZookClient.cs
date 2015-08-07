@@ -5,21 +5,29 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sodao.FastSocket.Client;
 using Sodao.FastSocket.SocketBase;
+using System.Net;
 
 namespace Sodao.Zookeeper
 {
     /// <summary>
     /// zookeeper client
     /// </summary>
-    public sealed class ZookClient : PooledSocketClient<ZookResponse>, IZookClient
+    public sealed class ZookClient : SocketClient<ZookResponse>, IZookClient
     {
         #region Private Members
-        private ZookServerPool _zkServerPool = null;
+        private readonly EndPoint[] _serverlist = null;             //zk集群服务器地址列表
+        private EndPoint _currEndPoint = null;
 
-        private volatile Data.KeeperState _currentState = Data.KeeperState.Disconnected;
         private readonly string _chrootPath = null;
-        internal readonly TimeSpan _sessionTimeout;
-        internal long _lastZxid = 0;//最近一次的zk事务ID
+        private volatile Data.KeeperState _currentState = Data.KeeperState.Disconnected;
+
+        private int _protocolVersion = 0;                           //zk协议版本
+        private long _lastZxid = 0;                                 //最近一次的zk事务ID
+        private readonly TimeSpan _sessionTimeout;                  //zk session timeout
+        private int _negotiatedSessionTimeout;                      //zk协商的timeout，毫秒数
+        private long _sessionID = 0L;                               //sessionID
+        private byte[] _sessionPassword = new byte[16];             //session password
+
         private readonly ZookWatcherManager _watcherManager = null;
         private readonly List<Data.AuthRequest> _authInfolist = new List<Data.AuthRequest>();
 
@@ -42,50 +50,49 @@ namespace Sodao.Zookeeper
         /// <param name="sessionTimeout"></param>
         /// <param name="defaultWatcher"></param>
         /// <exception cref="ArgumentNullException">connectionString is null or empty.</exception>
-        public ZookClient(string chrootPath, string connectionString, TimeSpan sessionTimeout, IWatcher defaultWatcher = null)
+        public ZookClient(string chrootPath,
+            string connectionString,
+            TimeSpan sessionTimeout,
+            IWatcher defaultWatcher = null)
             : base(new ZookProtocol(), 8192, 8192, 3000, 3000)
         {
             if (string.IsNullOrEmpty(connectionString)) throw new ArgumentNullException("connectionString");
             if (!string.IsNullOrEmpty(chrootPath)) Utils.PathUtils.ValidatePath(chrootPath);
 
+            this._serverlist = connectionString
+                .Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(c => new IPEndPoint(IPAddress.Parse(c.Substring(0, c.IndexOf(":"))), int.Parse(c.Substring(c.IndexOf(":") + 1))))
+                .ToArray();
+
             this._chrootPath = chrootPath;
             this._sessionTimeout = sessionTimeout;
             this._watcherManager = new ZookWatcherManager(defaultWatcher);
-            this._zkServerPool.SetOptions(this, connectionString);
 
             this.StartLoopPing();
         }
         #endregion
 
         #region Override Methods
-        /// <summary>
-        /// InitServerPool
-        /// </summary>
-        /// <returns></returns>
-        protected override IServerPool InitServerPool()
-        {
-            return this._zkServerPool = new ZookServerPool();
-        }
-        /// <summary>
-        /// on server available
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="connection"></param>
-        protected override void OnServerPoolServerAvailable(string name, IConnection connection)
-        {
-            base.OnServerPoolServerAvailable(name, connection);
-            this.ResetAuthInfo(connection);
-            this.ResetWatches(connection);
-        }
-        /// <summary>
-        /// OnSendFailed
-        /// </summary>
-        /// <param name="connection"></param>
-        /// <param name="request"></param>
-        protected override void OnSendFailed(IConnection connection, Request<ZookResponse> request)
-        {
-            if (request.Tag == null) base.OnSendFailed(connection, request);
-        }
+        ///// <summary>
+        ///// on server available
+        ///// </summary>
+        ///// <param name="name"></param>
+        ///// <param name="connection"></param>
+        //protected override void OnServerPoolServerAvailable(string name, IConnection connection)
+        //{
+        //    base.OnServerPoolServerAvailable(name, connection);
+        //    this.ResetAuthInfo(connection);
+        //    this.ResetWatches(connection);
+        //}
+        ///// <summary>
+        ///// OnSendFailed
+        ///// </summary>
+        ///// <param name="connection"></param>
+        ///// <param name="request"></param>
+        //protected override void OnSendFailed(IConnection connection, Request<ZookResponse> request)
+        //{
+        //    if (request.Tag == null) base.OnSendFailed(connection, request);
+        //}
         /// <summary>
         /// OnDisconnected
         /// </summary>
@@ -100,18 +107,24 @@ namespace Sodao.Zookeeper
         /// 处理未知response
         /// </summary>
         /// <param name="connection"></param>
-        /// <param name="response"></param>
-        protected override void HandleUnknowResponse(IConnection connection, ZookResponse response)
+        /// <param name="message"></param>
+        protected override void OnReceivedUnknowMessage(IConnection connection, ZookResponse message)
         {
-            if (response.HasError()) { connection.BeginDisconnect(response.Error()); return; }
-            if (response.XID != -1) return;
+            base.OnReceivedUnknowMessage(connection, message);
+
+            if (message.HasError())
+            {
+                connection.BeginDisconnect(message.Error());
+                return;
+            }
+            if (message.XID != -1) return;
 
             Data.WatcherEvent wevent = null;
-            try { wevent = Utils.Marshaller.Deserialize<Data.WatcherEvent>(response.Payload); }
+            try { wevent = Utils.Marshaller.Deserialize<Data.WatcherEvent>(message.Payload); }
             catch (Exception ex) { Sodao.FastSocket.SocketBase.Log.Trace.Error(ex.Message, ex); return; }
 
-            var e = new Data.WatchedEvent(wevent.Type, wevent.State, Utils.PathUtils.RemoveChroot(this._chrootPath, wevent.Path));
-            this._watcherManager.Invoke(e);
+            this._watcherManager.Invoke(new Data.WatchedEvent(wevent.Type, wevent.State,
+                Utils.PathUtils.RemoveChroot(this._chrootPath, wevent.Path)));
         }
         #endregion
 
@@ -136,7 +149,8 @@ namespace Sodao.Zookeeper
         public void AddAuthInfo(string scheme, byte[] auth)
         {
             lock (this._authInfolist) this._authInfolist.Add(new Data.AuthRequest(0, scheme, auth));
-            this.SendPacket(new Packet(Utils.Marshaller.Serialize(-4, Data.OpCode.Auth, new Data.AuthRequest(0, scheme, auth), true)));
+
+            base.Send(new Packet(Utils.Marshaller.Serialize(-4, Data.OpCode.Auth, new Data.AuthRequest(0, scheme, auth), true)));
         }
         /// <summary>
         /// Specify the default watcher for the connection (overrides the one
@@ -165,7 +179,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath, createMode.Sequential);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<string>(base.NextRequestSeqID(), Data.OpCode.Create,
+            return this.ExecuteAsync<string>(base.NextRequestSeqId(), Data.OpCode.Create,
                 new Data.CreateRequest(serverPath, data, acl, createMode.Flag),
                 (src, response) =>
                 {
@@ -204,7 +218,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<bool>(base.NextRequestSeqID(), Data.OpCode.Delete, new Data.DeleteRequest(serverPath, version),
+            return this.ExecuteAsync<bool>(base.NextRequestSeqId(), Data.OpCode.Delete, new Data.DeleteRequest(serverPath, version),
                 (src, response) =>
                 {
                     if (response.HasError()) { src.TrySetException(response.Error(clientPath)); return; }
@@ -247,7 +261,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<Data.Stat>(base.NextRequestSeqID(), Data.OpCode.Exists,
+            return this.ExecuteAsync<Data.Stat>(base.NextRequestSeqId(), Data.OpCode.Exists,
                 new Data.ExistsRequest(serverPath, watcher != null),
                 (src, response) =>
                 {
@@ -297,7 +311,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<Data.GetDataResponse>(base.NextRequestSeqID(), Data.OpCode.GetData,
+            return this.ExecuteAsync<Data.GetDataResponse>(base.NextRequestSeqId(), Data.OpCode.GetData,
                 new Data.GetDataRequest(serverPath, watcher != null),
                 (src, response) =>
                 {
@@ -347,7 +361,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<Data.Stat>(base.NextRequestSeqID(), Data.OpCode.SetData,
+            return this.ExecuteAsync<Data.Stat>(base.NextRequestSeqId(), Data.OpCode.SetData,
                 new Data.SetDataRequest(serverPath, data, version),
                 (src, response) =>
                 {
@@ -381,7 +395,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<Data.GetACLResponse>(base.NextRequestSeqID(), Data.OpCode.GetACL,
+            return this.ExecuteAsync<Data.GetACLResponse>(base.NextRequestSeqId(), Data.OpCode.GetACL,
                 new Data.GetACLRequest(serverPath),
                 (src, response) =>
                 {
@@ -423,7 +437,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<Data.Stat>(base.NextRequestSeqID(), Data.OpCode.SetACL,
+            return this.ExecuteAsync<Data.Stat>(base.NextRequestSeqId(), Data.OpCode.SetACL,
                 new Data.SetACLRequest(serverPath, acl, version),
                 (src, response) =>
                 {
@@ -490,7 +504,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<string[]>(base.NextRequestSeqID(), Data.OpCode.GetChildren,
+            return this.ExecuteAsync<string[]>(base.NextRequestSeqId(), Data.OpCode.GetChildren,
                 new Data.GetChildrenRequest(serverPath, watcher != null),
                 (src, response) =>
                 {
@@ -559,7 +573,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<Data.GetChildren2Response>(base.NextRequestSeqID(), Data.OpCode.GetChildren2,
+            return this.ExecuteAsync<Data.GetChildren2Response>(base.NextRequestSeqId(), Data.OpCode.GetChildren2,
                 new Data.GetChildrenRequest(serverPath, watcher != null),
                 (src, response) =>
                 {
@@ -586,6 +600,34 @@ namespace Sodao.Zookeeper
 
         #region Private Methods
         /// <summary>
+        /// connect
+        /// </summary>
+        private void Connect()
+        {
+            if (this._currEndPoint != null)
+                base.UnRegisterEndPoint(this._currEndPoint.ToString());
+
+            var endPoint = this._serverlist[(Guid.NewGuid().GetHashCode() & int.MaxValue) % this._serverlist.Length];
+            base.TryRegisterEndPoint(endPoint.ToString(), endPoint, ctx =>
+            {
+                var connectRequest = new Data.ConnectRequest(this._protocolVersion,
+                    this._lastZxid,
+                    (int)this._sessionTimeout.TotalMilliseconds,
+                    this._sessionID,
+                    this._sessionPassword);
+
+                ctx.Send(base.NewRequest("zk.connect",
+                    Utils.Marshaller.Serialize(connectRequest), base.MillisecondsReceiveTimeout,
+                    ex =>
+                    {
+                    }, message =>
+                    {
+                    }));
+
+                return null;
+            });
+        }
+        /// <summary>
         /// reset watches
         /// </summary>
         /// <param name="connection"></param>
@@ -597,7 +639,7 @@ namespace Sodao.Zookeeper
 
             if (dataKeys.Length > 0 || existKeys.Length > 0 || childKeys.Length > 0)
             {
-                this.SendPacket(connection, new Packet(Utils.Marshaller.Serialize(-8, Data.OpCode.SetWatches,
+                connection.BeginSend(new Packet(Utils.Marshaller.Serialize(-8, Data.OpCode.SetWatches,
                     new Data.SetWatchesRequest(this._lastZxid,
                         dataKeys.Select(c => Utils.PathUtils.PrependChroot(this._chrootPath, c)).ToArray(),
                         existKeys.Select(c => Utils.PathUtils.PrependChroot(this._chrootPath, c)).ToArray(),
@@ -615,27 +657,7 @@ namespace Sodao.Zookeeper
             if (arrAuthRequests.Length == 0) return;
 
             foreach (var child in arrAuthRequests)
-                this.SendPacket(connection, new Packet(Utils.Marshaller.Serialize(-4, Data.OpCode.Auth, child, true)));
-        }
-        /// <summary>
-        /// send packet
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <returns></returns>
-        private bool SendPacket(Packet packet)
-        {
-            return this.SendPacket(this._zkServerPool.Acquire(), packet);
-        }
-        /// <summary>
-        /// send packet
-        /// </summary>
-        /// <param name="connection"></param>
-        /// <param name="packet"></param>
-        /// <returns></returns>
-        private bool SendPacket(IConnection connection, Packet packet)
-        {
-            if (connection == null) return false;
-            connection.BeginSend(packet); return true;
+                connection.BeginSend(new Packet(Utils.Marshaller.Serialize(-4, Data.OpCode.Auth, child, true)));
         }
         /// <summary>
         /// execute async
@@ -654,7 +676,7 @@ namespace Sodao.Zookeeper
             if (callback == null) throw new ArgumentNullException("callback");
 
             var source = new TaskCompletionSource<T>(asyncState);
-            this.Send(new Request<ZookResponse>(xid, code.ToString(), Utils.Marshaller.Serialize(xid, code, record, true),
+            this.Send(new Request<ZookResponse>(xid, code.ToString(), Utils.Marshaller.Serialize(xid, code, record, true), base.MillisecondsReceiveTimeout,
                 ex => source.TrySetException(ex),
                 response =>
                 {
@@ -670,7 +692,7 @@ namespace Sodao.Zookeeper
         private void StartLoopPing()
         {
             this._timer = new Timer(_ =>
-                this.SendPacket(new Packet(Utils.Marshaller.Serialize(-2, Data.OpCode.Ping, null, true))),
+                base.Send(new Packet(Utils.Marshaller.Serialize(-2, Data.OpCode.Ping, null, true))),
                 null, 0, 3000);
         }
         /// <summary>
@@ -678,7 +700,7 @@ namespace Sodao.Zookeeper
         /// </summary>
         private void CloseSession()
         {
-            this.SendPacket(new Packet(Utils.Marshaller.Serialize(base.NextRequestSeqID(), Data.OpCode.CloseSession, null, true)));
+            this.Send(new Packet(Utils.Marshaller.Serialize(base.NextRequestSeqId(), Data.OpCode.CloseSession, null, true)));
         }
         /// <summary>
         /// set keeper state

@@ -51,7 +51,8 @@ namespace Sodao.Zookeeper
                     var kex = c.Exception.InnerException as KeeperException;
                     if (kex == null || kex.Error != Data.ZoookError.NODEEXISTS)
                     {
-                        TaskEx.Delay(new Random().Next(1000, 3000), () => TryEnsureCreate(zk, nodes, index, callback));
+                        TaskEx.Delay(new Random().Next(1000, 3000)).ContinueWith(_ =>
+                            TryEnsureCreate(zk, nodes, index, callback));
                         return;
                     }
                 }

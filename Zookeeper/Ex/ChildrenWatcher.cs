@@ -58,7 +58,12 @@ namespace Sodao.Zookeeper
         {
             this._zk.GetChildren(this._path, this._wrapper).ContinueWith(c =>
             {
-                if (c.IsFaulted) { TaskEx.Delay(new Random().Next(500, 1500), this.ListChildren); return; }
+                if (c.IsFaulted)
+                {
+                    TaskEx.Delay(new Random().Next(500, 1500)).ContinueWith(_ =>
+                        this.ListChildren());
+                    return;
+                }
                 this._callback(c.Result);
             });
         }

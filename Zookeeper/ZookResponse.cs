@@ -1,12 +1,12 @@
-﻿using System;
-using Sodao.FastSocket.Client.Response;
+﻿using Sodao.FastSocket.Client.Messaging;
+using System;
 
 namespace Sodao.Zookeeper
 {
     /// <summary>
     /// zookeeper response
     /// </summary>
-    public class ZookResponse : IResponse
+    public class ZookResponse : IMessage
     {
         #region Public Members
         /// <summary>
@@ -54,11 +54,11 @@ namespace Sodao.Zookeeper
         }
         #endregion
 
-        #region IResponse Members
+        #region IMessage Members
         /// <summary>
-        /// get seqID
+        /// get seqId
         /// </summary>
-        public int SeqID
+        public int SeqId
         {
             get { return this.XID; }
         }
