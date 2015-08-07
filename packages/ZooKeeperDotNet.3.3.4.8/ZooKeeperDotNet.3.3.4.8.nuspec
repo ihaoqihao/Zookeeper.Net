@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>ZooKeeperDotNet</id>
+    <version>3.3.4.8</version>
+    <title>ZooKeeperNet</title>
+    <authors>Eric Hauser</authors>
+    <owners>Eric Hauser</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>ZooKeeper Bindings for .NET</description>
+    <releaseNotes>Update to reflect latest changes from github repo.</releaseNotes>
+    <copyright>Copyright 2015</copyright>
+    <tags>ZooKeeper zk zoo</tags>
+  </metadata>
+</package>
