@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Sodao.FastSocket.Client;
+using Sodao.FastSocket.SocketBase;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Sodao.FastSocket.Client;
-using Sodao.FastSocket.SocketBase;
-using System.Net;
 
 namespace Sodao.Zookeeper
 {
@@ -16,7 +16,6 @@ namespace Sodao.Zookeeper
     {
         #region Private Members
         private readonly EndPoint[] _serverlist = null;             //zk集群服务器地址列表
-        private EndPoint _currEndPoint = null;
 
         private readonly string _chrootPath = null;
         private volatile Data.KeeperState _currentState = Data.KeeperState.Disconnected;
@@ -50,10 +49,7 @@ namespace Sodao.Zookeeper
         /// <param name="sessionTimeout"></param>
         /// <param name="defaultWatcher"></param>
         /// <exception cref="ArgumentNullException">connectionString is null or empty.</exception>
-        public ZookClient(string chrootPath,
-            string connectionString,
-            TimeSpan sessionTimeout,
-            IWatcher defaultWatcher = null)
+        public ZookClient(string chrootPath, string connectionString, TimeSpan sessionTimeout, IWatcher defaultWatcher = null)
             : base(new ZookProtocol(), 8192, 8192, 3000, 3000)
         {
             if (string.IsNullOrEmpty(connectionString)) throw new ArgumentNullException("connectionString");
@@ -68,31 +64,23 @@ namespace Sodao.Zookeeper
             this._sessionTimeout = sessionTimeout;
             this._watcherManager = new ZookWatcherManager(defaultWatcher);
 
-            this.StartLoopPing();
+            base.TryRegisterEndPoint("zk", this._serverlist, this.ConnectToZookeeper);
+            this.StartPing();
         }
         #endregion
 
         #region Override Methods
-        ///// <summary>
-        ///// on server available
-        ///// </summary>
-        ///// <param name="name"></param>
-        ///// <param name="connection"></param>
-        //protected override void OnServerPoolServerAvailable(string name, IConnection connection)
-        //{
-        //    base.OnServerPoolServerAvailable(name, connection);
-        //    this.ResetAuthInfo(connection);
-        //    this.ResetWatches(connection);
-        //}
-        ///// <summary>
-        ///// OnSendFailed
-        ///// </summary>
-        ///// <param name="connection"></param>
-        ///// <param name="request"></param>
-        //protected override void OnSendFailed(IConnection connection, Request<ZookResponse> request)
-        //{
-        //    if (request.Tag == null) base.OnSendFailed(connection, request);
-        //}
+        /// <summary>
+        /// on endPoint already
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="connection"></param>
+        protected override void OnEndPointAlready(string name, IConnection connection)
+        {
+            base.OnEndPointAlready(name, connection);
+            this.ResetAuthInfo(connection);
+            this.ResetWatches(connection);
+        }
         /// <summary>
         /// OnDisconnected
         /// </summary>
@@ -117,7 +105,7 @@ namespace Sodao.Zookeeper
                 connection.BeginDisconnect(message.Error());
                 return;
             }
-            if (message.XID != -1) return;
+            if (message.XId != -1) return;
 
             Data.WatcherEvent wevent = null;
             try { wevent = Utils.Marshaller.Deserialize<Data.WatcherEvent>(message.Payload); }
@@ -148,7 +136,8 @@ namespace Sodao.Zookeeper
         /// <param name="auth"></param>
         public void AddAuthInfo(string scheme, byte[] auth)
         {
-            lock (this._authInfolist) this._authInfolist.Add(new Data.AuthRequest(0, scheme, auth));
+            lock (this._authInfolist)
+                this._authInfolist.Add(new Data.AuthRequest(0, scheme, auth));
 
             base.Send(new Packet(Utils.Marshaller.Serialize(-4, Data.OpCode.Auth, new Data.AuthRequest(0, scheme, auth), true)));
         }
@@ -183,11 +172,19 @@ namespace Sodao.Zookeeper
                 new Data.CreateRequest(serverPath, data, acl, createMode.Flag),
                 (src, response) =>
                 {
-                    if (response.HasError()) { src.TrySetException(response.Error(clientPath)); return; }
+                    if (response.HasError())
+                    {
+                        src.TrySetException(response.Error(clientPath));
+                        return;
+                    }
 
                     Data.CreateResponse result = null;
                     try { result = Utils.Marshaller.Deserialize<Data.CreateResponse>(response.Payload); }
-                    catch (Exception ex) { src.TrySetException(ex); return; }
+                    catch (Exception ex)
+                    {
+                        src.TrySetException(ex);
+                        return;
+                    }
 
                     src.TrySetResult(Utils.PathUtils.RemoveChroot(this._chrootPath, result.Path));
                 });
@@ -218,10 +215,15 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<bool>(base.NextRequestSeqId(), Data.OpCode.Delete, new Data.DeleteRequest(serverPath, version),
+            return this.ExecuteAsync<bool>(base.NextRequestSeqId(), Data.OpCode.Delete,
+                new Data.DeleteRequest(serverPath, version),
                 (src, response) =>
                 {
-                    if (response.HasError()) { src.TrySetException(response.Error(clientPath)); return; }
+                    if (response.HasError())
+                    {
+                        src.TrySetException(response.Error(clientPath));
+                        return;
+                    }
                     src.TrySetResult(true);
                 });
         }
@@ -267,7 +269,8 @@ namespace Sodao.Zookeeper
                 {
                     if (response.HasError() && response.ErrorCode != Data.ZoookError.NONODE)
                     {
-                        src.TrySetException(response.Error(clientPath)); return;
+                        src.TrySetException(response.Error(clientPath));
+                        return;
                     }
 
                     if (watcher != null)//register watcher
@@ -278,12 +281,17 @@ namespace Sodao.Zookeeper
 
                     if (response.Payload == null || response.Payload.Length == 0)
                     {
-                        src.TrySetResult(null); return;
+                        src.TrySetResult(null);
+                        return;
                     }
 
                     Data.Stat result = null;
                     try { result = Utils.Marshaller.Deserialize<Data.Stat>(response.Payload); }
-                    catch (Exception ex) { src.TrySetException(ex); return; }
+                    catch (Exception ex)
+                    {
+                        src.TrySetException(ex);
+                        return;
+                    }
 
                     src.TrySetResult(result);
                 });
@@ -317,19 +325,25 @@ namespace Sodao.Zookeeper
                 {
                     if (response.HasError())
                     {
-                        src.TrySetException(response.Error(clientPath)); return;
+                        src.TrySetException(response.Error(clientPath));
+                        return;
                     }
 
                     if (watcher != null) this._watcherManager.RegisterDataWatcher(watcher, clientPath);//register watcher
 
                     if (response.Payload == null || response.Payload.Length == 0)
                     {
-                        src.TrySetResult(null); return;
+                        src.TrySetResult(null);
+                        return;
                     }
 
                     Data.GetDataResponse result = null;
                     try { result = Utils.Marshaller.Deserialize<Data.GetDataResponse>(response.Payload); }
-                    catch (Exception ex) { src.TrySetException(ex); return; }
+                    catch (Exception ex)
+                    {
+                        src.TrySetException(ex);
+                        return;
+                    }
 
                     src.TrySetResult(result);
                 });
@@ -367,17 +381,23 @@ namespace Sodao.Zookeeper
                 {
                     if (response.HasError())
                     {
-                        src.TrySetException(response.Error(clientPath)); return;
+                        src.TrySetException(response.Error(clientPath));
+                        return;
                     }
 
                     if (response.Payload == null || response.Payload.Length == 0)
                     {
-                        src.TrySetResult(null); return;
+                        src.TrySetResult(null);
+                        return;
                     }
 
                     Data.Stat result = null;
                     try { result = Utils.Marshaller.Deserialize<Data.Stat>(response.Payload); }
-                    catch (Exception ex) { src.TrySetException(ex); return; }
+                    catch (Exception ex)
+                    {
+                        src.TrySetException(ex);
+                        return;
+                    }
 
                     src.TrySetResult(result);
                 });
@@ -401,17 +421,23 @@ namespace Sodao.Zookeeper
                 {
                     if (response.HasError())
                     {
-                        src.TrySetException(response.Error(clientPath)); return;
+                        src.TrySetException(response.Error(clientPath));
+                        return;
                     }
 
                     if (response.Payload == null || response.Payload.Length == 0)
                     {
-                        src.TrySetResult(null); return;
+                        src.TrySetResult(null);
+                        return;
                     }
 
                     Data.GetACLResponse result = null;
                     try { result = Utils.Marshaller.Deserialize<Data.GetACLResponse>(response.Payload); }
-                    catch (Exception ex) { src.TrySetException(ex); return; }
+                    catch (Exception ex)
+                    {
+                        src.TrySetException(ex);
+                        return;
+                    }
 
                     src.TrySetResult(result);
                 });
@@ -443,17 +469,23 @@ namespace Sodao.Zookeeper
                 {
                     if (response.HasError())
                     {
-                        src.TrySetException(response.Error(clientPath)); return;
+                        src.TrySetException(response.Error(clientPath));
+                        return;
                     }
 
                     if (response.Payload == null || response.Payload.Length == 0)
                     {
-                        src.TrySetResult(null); return;
+                        src.TrySetResult(null);
+                        return;
                     }
 
                     Data.Stat result = null;
                     try { result = Utils.Marshaller.Deserialize<Data.Stat>(response.Payload); }
-                    catch (Exception ex) { src.TrySetException(ex); return; }
+                    catch (Exception ex)
+                    {
+                        src.TrySetException(ex);
+                        return;
+                    }
 
                     src.TrySetResult(result);
                 });
@@ -510,19 +542,25 @@ namespace Sodao.Zookeeper
                 {
                     if (response.HasError())
                     {
-                        src.TrySetException(response.Error(clientPath)); return;
+                        src.TrySetException(response.Error(clientPath));
+                        return;
                     }
 
                     if (watcher != null) this._watcherManager.RegisterChildWatcher(watcher, clientPath);//register watcher
 
                     if (response.Payload == null || response.Payload.Length == 0)
                     {
-                        src.TrySetResult(null); return;
+                        src.TrySetResult(null);
+                        return;
                     }
 
                     Data.GetChildrenResponse result = null;
                     try { result = Utils.Marshaller.Deserialize<Data.GetChildrenResponse>(response.Payload); }
-                    catch (Exception ex) { src.TrySetException(ex); return; }
+                    catch (Exception ex)
+                    {
+                        src.TrySetException(ex);
+                        return;
+                    }
 
                     src.TrySetResult(result.Children);
                 });
@@ -579,19 +617,25 @@ namespace Sodao.Zookeeper
                 {
                     if (response.HasError())
                     {
-                        src.TrySetException(response.Error(clientPath)); return;
+                        src.TrySetException(response.Error(clientPath));
+                        return;
                     }
 
                     if (watcher != null) this._watcherManager.RegisterChildWatcher(watcher, clientPath);//register watcher
 
                     if (response.Payload == null || response.Payload.Length == 0)
                     {
-                        src.TrySetResult(null); return;
+                        src.TrySetResult(null);
+                        return;
                     }
 
                     Data.GetChildren2Response result = null;
                     try { result = Utils.Marshaller.Deserialize<Data.GetChildren2Response>(response.Payload); }
-                    catch (Exception ex) { src.TrySetException(ex); return; }
+                    catch (Exception ex)
+                    {
+                        src.TrySetException(ex);
+                        return;
+                    }
 
                     src.TrySetResult(result);
                 });
@@ -600,32 +644,50 @@ namespace Sodao.Zookeeper
 
         #region Private Methods
         /// <summary>
-        /// connect
+        /// connecto to zookeeper
         /// </summary>
-        private void Connect()
+        /// <param name="connection"></param>
+        /// <returns></returns>
+        private Task ConnectToZookeeper(IConnection connection)
         {
-            if (this._currEndPoint != null)
-                base.UnRegisterEndPoint(this._currEndPoint.ToString());
+            var taskSource = new TaskCompletionSource<bool>();
 
-            var endPoint = this._serverlist[(Guid.NewGuid().GetHashCode() & int.MaxValue) % this._serverlist.Length];
-            base.TryRegisterEndPoint(endPoint.ToString(), endPoint, ctx =>
-            {
-                var connectRequest = new Data.ConnectRequest(this._protocolVersion,
-                    this._lastZxid,
-                    (int)this._sessionTimeout.TotalMilliseconds,
-                    this._sessionID,
-                    this._sessionPassword);
+            var request = base.NewRequest("zk.connect", Utils.Marshaller.Serialize(new Data.ConnectRequest(
+                this._protocolVersion, this._lastZxid, (int)this._sessionTimeout.TotalMilliseconds, this._sessionID, this._sessionPassword)),
+                base.MillisecondsReceiveTimeout,
+                ex => taskSource.TrySetException(ex),
+                message =>
+                {
+                    Data.ConnectResponse result = null;
+                    try { result = Utils.Marshaller.Deserialize<Data.ConnectResponse>(message.Payload); }
+                    catch (Exception ex) { taskSource.TrySetException(ex); return; }
 
-                ctx.Send(base.NewRequest("zk.connect",
-                    Utils.Marshaller.Serialize(connectRequest), base.MillisecondsReceiveTimeout,
-                    ex =>
+                    if (result.SessionTimeOut <= 0)//session expired
                     {
-                    }, message =>
-                    {
-                    }));
+                        this._protocolVersion = 0;
+                        this._sessionID = 0;
+                        this._negotiatedSessionTimeout = 0;
+                        this._sessionPassword = new byte[16];
 
-                return null;
-            });
+                        this.SetKeeperState(Data.KeeperState.Expired);
+                        taskSource.TrySetException(new ApplicationException("zookeeper session expired"));
+                        return;
+                    }
+
+                    this._protocolVersion = result.ProtocolVersion;
+                    this._negotiatedSessionTimeout = result.SessionTimeOut;
+                    this._sessionID = result.SessionID;
+                    this._sessionPassword = result.SessionPassword;
+                    this.SetKeeperState(Data.KeeperState.SyncConnected);
+
+                    taskSource.TrySetResult(true);
+                });
+
+            request.AllowRetry = false;
+            connection.UserData = request;
+            connection.BeginSend(request);
+
+            return taskSource.Task;
         }
         /// <summary>
         /// reset watches
@@ -676,24 +738,24 @@ namespace Sodao.Zookeeper
             if (callback == null) throw new ArgumentNullException("callback");
 
             var source = new TaskCompletionSource<T>(asyncState);
-            this.Send(new Request<ZookResponse>(xid, code.ToString(), Utils.Marshaller.Serialize(xid, code, record, true), base.MillisecondsReceiveTimeout,
+            this.Send(new Request<ZookResponse>(xid, code.ToString(),
+                Utils.Marshaller.Serialize(xid, code, record, true), base.MillisecondsReceiveTimeout,
                 ex => source.TrySetException(ex),
                 response =>
                 {
-                    if (response.ZXID > 0) this._lastZxid = response.ZXID;
+                    if (response.ZXId > 0) this._lastZxid = response.ZXId;
                     callback(source, response);
                 }));
 
             return source.Task;
         }
         /// <summary>
-        /// start loop ping
+        /// start ping
         /// </summary>
-        private void StartLoopPing()
+        private void StartPing()
         {
-            this._timer = new Timer(_ =>
-                base.Send(new Packet(Utils.Marshaller.Serialize(-2, Data.OpCode.Ping, null, true))),
-                null, 0, 3000);
+            var bytes = Utils.Marshaller.Serialize(-2, Data.OpCode.Ping, null, true);
+            this._timer = new Timer(_ => base.Send(new Packet(bytes)), null, 0, 3000);
         }
         /// <summary>
         /// close session
@@ -706,7 +768,7 @@ namespace Sodao.Zookeeper
         /// set keeper state
         /// </summary>
         /// <param name="state"></param>
-        internal void SetKeeperState(Data.KeeperState state)
+        private void SetKeeperState(Data.KeeperState state)
         {
             this._currentState = state;
             if (this.KeeperStateChanged != null) this.KeeperStateChanged(state);

@@ -21,6 +21,8 @@ namespace Tests
                 Console.ForegroundColor = ConsoleColor.Gray;
             }));
 
+            client.Exists("/tempABC", true).Wait();
+
             var watcher = new ChildrenWatcher(client, "/", c =>
             {
                 Console.WriteLine(string.Join("-", c));
@@ -28,6 +30,9 @@ namespace Tests
 
             Console.ReadLine();
             var sessionNode = new SessionNode(client, "/tempABC", null, IDs.OPEN_ACL_UNSAFE);
+
+            client.Exists("/tempABC", true).Wait();
+
             Console.ReadLine();
             sessionNode.Close();
 

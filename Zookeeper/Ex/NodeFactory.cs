@@ -41,7 +41,11 @@ namespace Sodao.Zookeeper
         /// <param name="callback">当所有节点创建完毕时的回调</param>
         static private void TryEnsureCreate(IZookClient zk, NodeInfo[] nodes, int index, Action callback)
         {
-            if (index >= nodes.Length) { if (callback != null) callback(); return; }
+            if (index >= nodes.Length)
+            {
+                if (callback != null) callback();
+                return;
+            }
 
             var currNode = nodes[index];
             zk.Create(currNode.Path, currNode.Data, currNode.ACL, currNode.CreateMode).ContinueWith(c =>

@@ -33,14 +33,6 @@
     <DocumentationFile>bin\Release\Zookeeper.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FastSocket.Client, Version=1.0.0.6, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\fastsocket_client_1.0.0.6.1.0.0.0\lib\net40\FastSocket.Client.dll</HintPath>
-    </Reference>
-    <Reference Include="FastSocket.SocketBase, Version=1.0.0.6, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\fastsocket_base_1.0.0.6.1.0.0.0\lib\net40\FastSocket.SocketBase.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
   </ItemGroup>
@@ -105,7 +97,6 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

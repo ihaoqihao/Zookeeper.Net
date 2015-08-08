@@ -12,7 +12,7 @@ namespace Sodao.Zookeeper
         /// <summary>
         /// xid
         /// </summary>
-        public readonly int XID;
+        public readonly int XId;
         /// <summary>
         /// payload
         /// </summary>
@@ -20,7 +20,7 @@ namespace Sodao.Zookeeper
         /// <summary>
         /// zxid，事务ID
         /// </summary>
-        public readonly long ZXID;
+        public readonly long ZXId;
         /// <summary>
         /// 错误代码
         /// </summary>
@@ -35,7 +35,7 @@ namespace Sodao.Zookeeper
         /// <param name="payload"></param>
         public ZookResponse(int xid, byte[] payload)
         {
-            this.XID = xid;
+            this.XId = xid;
             this.Payload = payload;
         }
         /// <summary>
@@ -47,8 +47,8 @@ namespace Sodao.Zookeeper
         /// <param name="payload"></param>
         public ZookResponse(int xid, long zxid, Data.ZoookError errorCode, byte[] payload)
         {
-            this.XID = xid;
-            this.ZXID = zxid;
+            this.XId = xid;
+            this.ZXId = zxid;
             this.ErrorCode = errorCode;
             this.Payload = payload;
         }
@@ -60,7 +60,7 @@ namespace Sodao.Zookeeper
         /// </summary>
         public int SeqId
         {
-            get { return this.XID; }
+            get { return this.XId; }
         }
         #endregion
 
