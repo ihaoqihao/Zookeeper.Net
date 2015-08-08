@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>fastsocket_client_1.0.0.6</id>
+    <version>1.0.0.1</version>
+    <title>fastsocket client 1.0.0.6</title>
+    <authors>ihaoqihao</authors>
+    <owners>ihaoqihao</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>a c# async socket client lib</description>
+    <dependencies>
+      <dependency id="fastsocket_base_1.0.0.6" version="1.0.0.1" />
+    </dependencies>
+  </metadata>
+</package>
