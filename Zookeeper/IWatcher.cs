@@ -7,9 +7,9 @@ namespace Sodao.Zookeeper
     public interface IWatcher
     {
         /// <summary>
-        /// 处理相关事件
+        /// invoke event.
         /// </summary>
         /// <param name="zevent"></param>
-        void Process(Data.WatchedEvent zevent);
+        void Invoke(Data.WatchedEvent zevent);
     }
 }

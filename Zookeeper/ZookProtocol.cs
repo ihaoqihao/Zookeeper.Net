@@ -14,7 +14,7 @@ namespace Sodao.Zookeeper
         /// <summary>
         /// defautl seqId
         /// </summary>
-        public int DefaultSyncSeqId
+        public int DefaultSyncSeqID
         {
             get { throw new NotImplementedException(); }
         }
@@ -32,6 +32,7 @@ namespace Sodao.Zookeeper
         /// <param name="buffer"></param>
         /// <param name="readlength"></param>
         /// <returns></returns>
+        /// <exception cref="BadProtocolException"></exception>
         public ZookResponse Parse(IConnection connection, ArraySegment<byte> buffer, out int readlength)
         {
             if (buffer.Count < 4)
@@ -58,7 +59,7 @@ namespace Sodao.Zookeeper
                 connection.UserData = null;
                 var connectResponseBuffer = new byte[messageLength];
                 Buffer.BlockCopy(payload, buffer.Offset + 4, connectResponseBuffer, 0, messageLength);
-                return new ZookResponse(connectRequest.SeqId, connectResponseBuffer);
+                return new ZookResponse(connectRequest.SeqID, connectResponseBuffer);
             }
 
             var xid = NetworkBitConverter.ToInt32(payload, buffer.Offset + 4);

@@ -8,11 +8,11 @@ namespace Tests
     {
         static void Main(string[] args)
         {
-            Sodao.FastSocket.SocketBase.Log.Trace.EnableConsole();
-            Sodao.FastSocket.SocketBase.Log.Trace.EnableDiagnostic();
+            //Sodao.FastSocket.SocketBase.Log.Trace.EnableConsole();
+            //Sodao.FastSocket.SocketBase.Log.Trace.EnableDiagnostic();
 
             var client = Sodao.Zookeeper.ZookClientPool.Get("zk1");
-            client.Register(new WatcherWrapper(e =>
+            client.Register(new WatcherAction(e =>
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(e.Path);
@@ -21,21 +21,32 @@ namespace Tests
                 Console.ForegroundColor = ConsoleColor.Gray;
             }));
 
-            client.Exists("/tempABC", true).Wait();
-
-            var watcher = new ChildrenWatcher(client, "/", c =>
+            Console.WriteLine("watch zk node /hong2...");
+            var watcher = new ChildrenWatcher(client, "/hong2", c =>
             {
                 Console.WriteLine(string.Join("-", c));
             });
 
+            Console.WriteLine("create zk session node /hong2/tempABC...");
+            var sessionNode = new SessionNode(client, "/hong2/tempABC", null, IDs.OPEN_ACL_UNSAFE);
+
+            Console.WriteLine("create zk node /hong2...");
+            NodeCreator.TryCreate(client, new NodeInfo("/hong2", null, IDs.OPEN_ACL_UNSAFE, CreateModes.Persistent));
+
+            Console.WriteLine("press any key stop thrift client...");
             Console.ReadLine();
-            var sessionNode = new SessionNode(client, "/tempABC", null, IDs.OPEN_ACL_UNSAFE);
+            client.Stop();
 
-            client.Exists("/tempABC", true).Wait();
-
+            Console.WriteLine("press any key start thrift client...");
             Console.ReadLine();
-            sessionNode.Close();
+            client.Start();
 
+            Console.WriteLine("press any key dispose zk node(/hong2, /hong2/tempABC)...");
+            Console.ReadLine();
+            sessionNode.Dispose();
+            client.Delete("/hong2");
+
+            Console.WriteLine("press any key exit...");
             Console.ReadLine();
         }
     }

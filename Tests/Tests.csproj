@@ -61,11 +61,13 @@
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FastSocket.Client">
-      <HintPath>..\packages\fastsocket_client_1.0.0.6.1.0.0.1\lib\net40\FastSocket.Client.dll</HintPath>
+    <Reference Include="FastSocket.Client, Version=1.0.0.6, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\fastsocket_client_1.0.0.6.1.0.0.6\lib\net40\FastSocket.Client.dll</HintPath>
     </Reference>
-    <Reference Include="FastSocket.SocketBase">
-      <HintPath>..\packages\fastsocket_base_1.0.0.6.1.0.0.1\lib\net40\FastSocket.SocketBase.dll</HintPath>
+    <Reference Include="FastSocket.SocketBase, Version=1.0.0.6, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\fastsocket_base_1.0.0.6.1.0.0.3\lib\net40\FastSocket.SocketBase.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>

@@ -15,6 +15,7 @@ namespace Sodao.Zookeeper
     public sealed class ZookClient : SocketClient<ZookResponse>, IZookClient
     {
         #region Private Members
+        private int _isActive = 1;
         private readonly EndPoint[] _serverlist = null;             //zk集群服务器地址列表
 
         private readonly string _chrootPath = null;
@@ -34,13 +35,6 @@ namespace Sodao.Zookeeper
         #endregion
 
         #region Constructors
-        /// <summary>
-        /// new
-        /// </summary>
-        ~ZookClient()
-        {
-            this.CloseSession();
-        }
         /// <summary>
         /// new
         /// </summary>
@@ -66,6 +60,17 @@ namespace Sodao.Zookeeper
 
             base.TryRegisterEndPoint("zk", this._serverlist, this.ConnectToZookeeper);
             this.StartPing();
+        }
+        #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// true is active
+        /// </summary>
+        /// <returns></returns>
+        public bool IsActive()
+        {
+            return Thread.VolatileRead(ref this._isActive) == 1;
         }
         #endregion
 
@@ -113,6 +118,23 @@ namespace Sodao.Zookeeper
 
             this._watcherManager.Invoke(new Data.WatchedEvent(wevent.Type, wevent.State,
                 Utils.PathUtils.RemoveChroot(this._chrootPath, wevent.Path)));
+        }
+        /// <summary>
+        /// start
+        /// </summary>
+        public override void Start()
+        {
+            if (Interlocked.CompareExchange(ref this._isActive, 1, 0) == 1) return;
+            base.Start();
+        }
+        /// <summary>
+        /// stop
+        /// </summary>
+        public override void Stop()
+        {
+            if (Interlocked.CompareExchange(ref this._isActive, 0, 1) == 0) return;
+            this.CloseSession();
+            base.Stop();
         }
         #endregion
 
@@ -168,7 +190,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath, createMode.Sequential);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<string>(base.NextRequestSeqId(), Data.OpCode.Create,
+            return this.ExecuteAsync<string>(base.NextRequestSeqID(), Data.OpCode.Create,
                 new Data.CreateRequest(serverPath, data, acl, createMode.Flag),
                 (src, response) =>
                 {
@@ -215,7 +237,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<bool>(base.NextRequestSeqId(), Data.OpCode.Delete,
+            return this.ExecuteAsync<bool>(base.NextRequestSeqID(), Data.OpCode.Delete,
                 new Data.DeleteRequest(serverPath, version),
                 (src, response) =>
                 {
@@ -263,7 +285,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<Data.Stat>(base.NextRequestSeqId(), Data.OpCode.Exists,
+            return this.ExecuteAsync<Data.Stat>(base.NextRequestSeqID(), Data.OpCode.Exists,
                 new Data.ExistsRequest(serverPath, watcher != null),
                 (src, response) =>
                 {
@@ -319,7 +341,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<Data.GetDataResponse>(base.NextRequestSeqId(), Data.OpCode.GetData,
+            return this.ExecuteAsync<Data.GetDataResponse>(base.NextRequestSeqID(), Data.OpCode.GetData,
                 new Data.GetDataRequest(serverPath, watcher != null),
                 (src, response) =>
                 {
@@ -375,7 +397,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<Data.Stat>(base.NextRequestSeqId(), Data.OpCode.SetData,
+            return this.ExecuteAsync<Data.Stat>(base.NextRequestSeqID(), Data.OpCode.SetData,
                 new Data.SetDataRequest(serverPath, data, version),
                 (src, response) =>
                 {
@@ -415,7 +437,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<Data.GetACLResponse>(base.NextRequestSeqId(), Data.OpCode.GetACL,
+            return this.ExecuteAsync<Data.GetACLResponse>(base.NextRequestSeqID(), Data.OpCode.GetACL,
                 new Data.GetACLRequest(serverPath),
                 (src, response) =>
                 {
@@ -463,7 +485,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<Data.Stat>(base.NextRequestSeqId(), Data.OpCode.SetACL,
+            return this.ExecuteAsync<Data.Stat>(base.NextRequestSeqID(), Data.OpCode.SetACL,
                 new Data.SetACLRequest(serverPath, acl, version),
                 (src, response) =>
                 {
@@ -536,7 +558,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<string[]>(base.NextRequestSeqId(), Data.OpCode.GetChildren,
+            return this.ExecuteAsync<string[]>(base.NextRequestSeqID(), Data.OpCode.GetChildren,
                 new Data.GetChildrenRequest(serverPath, watcher != null),
                 (src, response) =>
                 {
@@ -611,7 +633,7 @@ namespace Sodao.Zookeeper
             Utils.PathUtils.ValidatePath(clientPath);
             var serverPath = Utils.PathUtils.PrependChroot(this._chrootPath, clientPath);
 
-            return this.ExecuteAsync<Data.GetChildren2Response>(base.NextRequestSeqId(), Data.OpCode.GetChildren2,
+            return this.ExecuteAsync<Data.GetChildren2Response>(base.NextRequestSeqID(), Data.OpCode.GetChildren2,
                 new Data.GetChildrenRequest(serverPath, watcher != null),
                 (src, response) =>
                 {
@@ -683,7 +705,6 @@ namespace Sodao.Zookeeper
                     taskSource.TrySetResult(true);
                 });
 
-            request.AllowRetry = false;
             connection.UserData = request;
             connection.BeginSend(request);
 
@@ -755,14 +776,17 @@ namespace Sodao.Zookeeper
         private void StartPing()
         {
             var bytes = Utils.Marshaller.Serialize(-2, Data.OpCode.Ping, null, true);
-            this._timer = new Timer(_ => base.Send(new Packet(bytes)), null, 0, 3000);
+            this._timer = new Timer(_ =>
+            {
+                if (this.IsActive()) base.Send(new Packet(bytes));
+            }, null, 0, 3000);
         }
         /// <summary>
         /// close session
         /// </summary>
         private void CloseSession()
         {
-            this.Send(new Packet(Utils.Marshaller.Serialize(base.NextRequestSeqId(), Data.OpCode.CloseSession, null, true)));
+            this.Send(new Packet(Utils.Marshaller.Serialize(base.NextRequestSeqID(), Data.OpCode.CloseSession, null, true)));
         }
         /// <summary>
         /// set keeper state

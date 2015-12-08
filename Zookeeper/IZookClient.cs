@@ -218,5 +218,14 @@ namespace Sodao.Zookeeper
         /// <param name="watcher"></param>
         /// <returns></returns>
         Task<Data.GetChildren2Response> GetChildren2(string path, IWatcher watcher);
+
+        /// <summary>
+        /// start
+        /// </summary>
+        void Start();
+        /// <summary>
+        /// stop
+        /// </summary>
+        void Stop();
     }
 }

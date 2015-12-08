@@ -212,7 +212,7 @@ namespace Sodao.Zookeeper
                     var watcher = childWatcher;
                     ThreadPool.QueueUserWorkItem(_ =>
                     {
-                        try { watcher.Process(wevent); }
+                        try { watcher.Invoke(wevent); }
                         catch (Exception ex) { Sodao.FastSocket.SocketBase.Log.Trace.Error(ex.Message, ex); }
                     });
                 }

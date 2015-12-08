@@ -1,20 +1,30 @@
-﻿using System;
+﻿using Sodao.FastSocket.SocketBase.Utils;
+using System;
+using System.Threading;
 
 namespace Sodao.Zookeeper
 {
     /// <summary>
     /// session node
     /// </summary>
-    public sealed class SessionNode
+    public sealed class SessionNode : IDisposable
     {
         #region Private Members
         private readonly IZookClient _zk = null;
         private readonly NodeInfo _nodeInfo = null;
-        private bool _isClosed = false;
-        private bool _nodeCreating = false;
+
+        private int _isdisposed = 0;
+        private int _isCreating = 0;
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// free
+        /// </summary>
+        ~SessionNode()
+        {
+            this.Dispose();
+        }
         /// <summary>
         /// new
         /// </summary>
@@ -41,27 +51,40 @@ namespace Sodao.Zookeeper
         /// </summary>
         private void CreateNode()
         {
-            lock (this)
-            {
-                if (this._isClosed || this._nodeCreating) return;
-                this._nodeCreating = true;
-            }
+            if (Thread.VolatileRead(ref this._isdisposed) == 1) return;
+            if (Interlocked.CompareExchange(ref this._isCreating, 1, 0) == 1) return;
 
-            NodeFactory.TryEnsureCreate(this._zk, this._nodeInfo, () =>
+            NodeCreator.TryCreate(this._zk, this._nodeInfo).ContinueWith(c =>
             {
-                lock (this)
+                Thread.VolatileWrite(ref this._isCreating, 0);
+                if (Thread.VolatileRead(ref this._isdisposed) == 1)
                 {
-                    this._nodeCreating = false;
-                    if (this._isClosed) { this.RemoveNode(); return; }
+                    this.RemoveNode();
+                    return;
                 }
+
+                if (!c.IsFaulted) return;
+                TaskEx.Delay(new Random().Next(100, 1500)).ContinueWith(_ => this.CreateNode());
             });
         }
         /// <summary>
-        /// remove node.
+        /// remove node
         /// </summary>
-        private void RemoveNode()
+        /// <param name="retry"></param>
+        private void RemoveNode(int retry = 0)
         {
-            this._zk.Delete(this._nodeInfo.Path);
+            if (retry > 10) return;
+            this._zk.Delete(this._nodeInfo.Path).ContinueWith(c =>
+            {
+                if (!c.IsFaulted) return;
+                var zkEx = c.Exception.InnerException as KeeperException;
+                if (zkEx != null && (
+                    zkEx.Error == Data.ZoookError.NONODE ||
+                    zkEx.Error == Data.ZoookError.BADVERSION ||
+                    zkEx.Error == Data.ZoookError.NOTEMPTY)) return;
+
+                TaskEx.Delay(new Random().Next(10, 500)).ContinueWith(_ => this.RemoveNode(retry + 1));
+            });
         }
         /// <summary>
         /// KeeperStateChanged
@@ -73,22 +96,17 @@ namespace Sodao.Zookeeper
         }
         #endregion
 
-        #region Public Methods
+        #region IDisposable Members
         /// <summary>
-        /// close
+        /// dispose
         /// </summary>
-        public void Close()
+        public void Dispose()
         {
-            lock (this)
-            {
-                if (this._isClosed) return;
-                this._isClosed = true;
+            if (Interlocked.CompareExchange(ref this._isdisposed, 1, 0) == 1) return;
 
-                this._zk.KeeperStateChanged -= new KeeperStateChangedHandler(this.KeeperStateChanged);
-
-                if (this._nodeCreating) return;
-                this.RemoveNode();
-            }
+            this._zk.KeeperStateChanged -= new KeeperStateChangedHandler(this.KeeperStateChanged);
+            this.RemoveNode();
+            GC.SuppressFinalize(this);
         }
         #endregion
     }

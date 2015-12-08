@@ -58,7 +58,7 @@ namespace Sodao.Zookeeper
         /// <summary>
         /// get seqId
         /// </summary>
-        public int SeqId
+        public int SeqID
         {
             get { return this.XId; }
         }
